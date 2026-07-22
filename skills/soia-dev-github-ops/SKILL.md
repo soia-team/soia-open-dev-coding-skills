@@ -1,9 +1,9 @@
 ---
 name: soia-dev-github-ops
-description: Use gh CLI for GitHub issue/PR/checks/review/run/release/collaborator ops, pre-merge rule review, and author-side fix-the-review. Triggers：「看下这个 PR」「查 CI 挂了」「合并/评审 PR」「发 release」「加协作者权限」「审核 PR 该不该合」「帮我修复这个 PR」
-version: 2.1.1
+description: GitHub gh CLI 运维、PR 合规审查与修复。触发：「查 CI 挂了」「发 release」「加协作者权限」
+version: 2.1.2
 created_at: 2026-07-09 07:45:34
-updated_at: 2026-07-22 21:13:22
+updated_at: 2026-07-23 07:16:02
 created_by: claude opus 4.6
 updated_by: gpt-5.6-luna
 dependencies:
