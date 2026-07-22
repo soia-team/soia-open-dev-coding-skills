@@ -1,9 +1,9 @@
 ---
 name: soia-dev-agent-md-advisor
-description: AGENTS.md / CLAUDE.md / GEMINI.md 及 .claude 配置设计顾问,三模式:审查诊断/新项目起草/最佳实践问答。六维度:长度预算/可执行性/分区路由/重复矛盾/入口一致性/时效。默认只诊断不改,确认后才落地。Triggers:「审查我的 AGENTS.md」「CLAUDE.md 怎么写」「配置文件太长了」「给新项目起草 AGENTS」「多个 AI 入口怎么管」
-version: 1.0.1
+description: AI 项目指令与配置设计顾问，提供诊断、起草和改写建议。触发：「审查我的 AGENTS.md」「CLAUDE.md 怎么写」「多个 AI 入口怎么管」
+version: 1.0.2
 created_at: 2026-07-10 09:10:23
-updated_at: 2026-07-22 21:13:22
+updated_at: 2026-07-23 07:16:02
 created_by: claude opus 4.6
 updated_by: gpt-5.6-luna
 ---
