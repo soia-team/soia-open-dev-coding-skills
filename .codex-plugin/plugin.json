@@ -1,0 +1,23 @@
+{
+  "name": "soia-dev-coding",
+  "version": "1.0.0",
+  "description": "开发编码技能：工程协议、代码审查、缺陷修复、任务执行与 AI 派发",
+  "author": {
+    "name": "soia-team"
+  },
+  "interface": {
+    "displayName": "开发编码技能库",
+    "shortDescription": "工程协议、代码审查、缺陷修复、任务执行与 AI 派发",
+    "longDescription": "面向软件开发的工程协议、代码审查、缺陷修复、任务执行、终端操作与 AI 派发技能。",
+    "developerName": "soia-team",
+    "category": "Developer Tools",
+    "capabilities": [
+      "代码审查",
+      "缺陷修复",
+      "工程任务执行"
+    ],
+    "defaultPrompt": [
+      "请审查当前代码改动，并给出可验证的修复建议。"
+    ]
+  }
+}
