@@ -15,6 +15,7 @@
 | `soia-dev-project-scaffold` | 为新 Git 项目生成最小 AI 协作基线与文档导航结构。 |
 | `soia-dev-review-panel` | 对代码差异或技能包执行多视角、对抗式只读审查。 |
 | `soia-dev-task-execute` | 以边界定义、最小实施、验证、复核和回执执行通用工程任务。 |
+| `soia-dev-terminal-ops` | 管理 POSIX/macOS/Linux 长任务、tmux 会话、日志抓取、停滞诊断与安全恢复。 |
 
 ## 安装
 

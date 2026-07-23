@@ -2,7 +2,7 @@
 
 > Generated from `skills/*/SKILL.md` and optional `agents/openai.yaml`.
 > Do not edit by hand. Run `python3 scripts/generate_skill_catalog.py`.
-> Discoverable by `npx skills add soia-team/soia-open-dev-coding-skills -l`: 9 skills.
+> Discoverable by `npx skills add soia-team/soia-open-dev-coding-skills -l`: 10 skills.
 
 ## Source Fields
 
@@ -24,6 +24,7 @@
 | [`soia-dev-project-scaffold`](./soia-dev-project-scaffold/) | 为任意新 Git 项目创建最小 AI 协作基线。 | Use $soia-dev-project-scaffold to create a minimal AGENTS.md and docs baseline for a new Git project. |
 | [`soia-dev-review-panel`](./soia-dev-review-panel/) | Run a multi-lens, adversarially-verified review over a code diff or a skill package — independent lenses first, refute-by-default verification second, one graded report last. | Use soia-dev-review-panel: 多角度审一下我这次改动，每条发现都要经过对抗式复核再报告 |
 | [`soia-dev-task-execute`](./soia-dev-task-execute/) | 执行任意工程任务的通用闭环：定义边界、实施最小改动、验证、独立复核与回执。适用于代码、配置、文档和维护任务。 |  |
+| [`soia-dev-terminal-ops`](./soia-dev-terminal-ops/) | Monitor long-running POSIX jobs and recover stalled processes safely | Use $soia-dev-terminal-ops to monitor this long-running command, diagnose progress with multiple signals, and apply the TERM-to-KILL confirmation gates if recovery is needed. |
 
 ## Registry Export
 
