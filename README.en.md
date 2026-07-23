@@ -15,6 +15,7 @@ A reusable software-engineering skill set for task execution, code changes, revi
 | `soia-dev-project-scaffold` | Create a minimal AI collaboration baseline and documentation navigation for new Git projects. |
 | `soia-dev-review-panel` | Perform multi-lens, adversarial, read-only reviews of code diffs or skill packages. |
 | `soia-dev-task-execute` | Execute general engineering tasks through scoped implementation, validation, independent review, and receipts. |
+| `soia-dev-terminal-ops` | Manage POSIX/macOS/Linux long-running tasks, tmux sessions, log capture, stall diagnosis, and safe recovery. |
 
 ## Install
 
