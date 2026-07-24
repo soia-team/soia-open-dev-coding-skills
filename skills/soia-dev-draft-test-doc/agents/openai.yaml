@@ -1,0 +1,4 @@
+interface:
+  display_name: "Draft Test Documents"
+  short_description: "Turn requirements or a PRD into a test plan, cases, regression checklist, and acceptance matrix."
+  default_prompt: "基于以下需求生成测试计划、正常/边界/异常/数据流用例、回归清单和验收对照表：<需求文本>"
