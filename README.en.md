@@ -10,6 +10,7 @@ A reusable software-engineering skill set for task execution, code changes, revi
 | `soia-dev-agent-md-advisor` | Diagnose, design, and rewrite AI project instructions such as AGENTS.md and CLAUDE.md. |
 | `soia-dev-coding-protocol` | Apply minimal-change, validation-first, and anti-fake-fix contracts to engineering work. |
 | `soia-dev-doc-sync` | Audit and repair drift in README, CHANGELOG, VERSION, and related documentation from explicit sources of truth. |
+| `soia-dev-draft-test-doc` | Generate test plans, test cases, regression checklists, and acceptance mappings from requirements, PRDs, or change notes. |
 | `soia-dev-fix-loop` | Resolve review or test findings through reproduction, decision, repair, regression checks, and receipts. |
 | `soia-dev-github-ops` | Operate pull requests, CI, reviews, releases, and collaborator access with GitHub CLI. |
 | `soia-dev-project-scaffold` | Create a minimal AI collaboration baseline and documentation navigation for new Git projects. |

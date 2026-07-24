@@ -2,7 +2,7 @@
 
 > Generated from `skills/*/SKILL.md` and optional `agents/openai.yaml`.
 > Do not edit by hand. Run `python3 scripts/generate_skill_catalog.py`.
-> Discoverable by `npx skills add soia-team/soia-open-dev-coding-skills -l`: 10 skills.
+> Discoverable by `npx skills add soia-team/soia-open-dev-coding-skills -l`: 11 skills.
 
 ## Source Fields
 
@@ -19,6 +19,7 @@
 | [`soia-dev-agent-md-advisor`](./soia-dev-agent-md-advisor/) | AGENTS.md / CLAUDE.md / GEMINI.md 与 .claude 配置设计顾问：审查诊断、新项目起草、最佳实践问答三种模式，六维度诊断长度预算/可执行性/分区路由/重复矛盾/入口一致性/时效。 | Use soia-dev-agent-md-advisor: 审查我的 AGENTS.md/CLAUDE.md 配置，按六维度给我一份问题清单和改写建议，先别动手改，等我确认。 |
 | [`soia-dev-coding-protocol`](./soia-dev-coding-protocol/) | 为普通工程代码改动建立最小范围、验证前置、anti-fake-fix 与写后复核契约；适用于修复、重构、实现和评审。 |  |
 | [`soia-dev-doc-sync`](./soia-dev-doc-sync/) | 审计并修复任意代码仓的 docs、README、CHANGELOG、VERSION 与明确真源之间的事实漂移；先建立真源优先级与证据，再按依赖顺序同步派生文档。 |  |
+| [`soia-dev-draft-test-doc`](./soia-dev-draft-test-doc/) | Turn requirements or a PRD into a test plan, cases, regression checklist, and acceptance matrix. |  |
 | [`soia-dev-fix-loop`](./soia-dev-fix-loop/) | 用五步闭环处理代码审查或测试发现：复现、决策、修复、回归复核与回执，防止遗漏、假修复和无证据收口。 |  |
 | [`soia-dev-github-ops`](./soia-dev-github-ops/) | Use gh CLI for GitHub issue, PR, checks, review, workflow run, release, and collaborator-permission operations, plus a pre-merge rule-review procedure and an author-side address-the-review-and-fix procedure, with structu... | Use soia-dev-github-ops: review this open PR against the repo's own rules and tell me whether it's safe to merge. |
 | [`soia-dev-project-scaffold`](./soia-dev-project-scaffold/) | 为任意新 Git 项目创建最小 AI 协作基线。 | Use $soia-dev-project-scaffold to create a minimal AGENTS.md and docs baseline for a new Git project. |
