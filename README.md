@@ -12,6 +12,7 @@
 | `soia-dev-doc-sync` | 根据明确真源审计并修复 README、CHANGELOG、VERSION 等文档漂移。 |
 | `soia-dev-fix-loop` | 以复现、决策、修复、回归复核和回执闭环处理评审或测试发现。 |
 | `soia-dev-github-ops` | 使用 GitHub CLI 管理 PR、CI、评审、发布与协作者权限操作。 |
+| `soia-dev-plan-release-checklist` | 为软件发布生成发布清单、预检门、灰度验证、回滚方案与发布后核对。 |
 | `soia-dev-project-scaffold` | 为新 Git 项目生成最小 AI 协作基线与文档导航结构。 |
 | `soia-dev-review-panel` | 对代码差异或技能包执行多视角、对抗式只读审查。 |
 | `soia-dev-task-execute` | 以边界定义、最小实施、验证、复核和回执执行通用工程任务。 |

@@ -12,6 +12,7 @@ A reusable software-engineering skill set for task execution, code changes, revi
 | `soia-dev-doc-sync` | Audit and repair drift in README, CHANGELOG, VERSION, and related documentation from explicit sources of truth. |
 | `soia-dev-fix-loop` | Resolve review or test findings through reproduction, decision, repair, regression checks, and receipts. |
 | `soia-dev-github-ops` | Operate pull requests, CI, reviews, releases, and collaborator access with GitHub CLI. |
+| `soia-dev-plan-release-checklist` | Build software release checklists, preflight gates, staged validation, rollback plans, and post-release checks. |
 | `soia-dev-project-scaffold` | Create a minimal AI collaboration baseline and documentation navigation for new Git projects. |
 | `soia-dev-review-panel` | Perform multi-lens, adversarial, read-only reviews of code diffs or skill packages. |
 | `soia-dev-task-execute` | Execute general engineering tasks through scoped implementation, validation, independent review, and receipts. |
