@@ -1,14 +1,14 @@
 ---
-name: soia-dev-plan-release-checklist
+name: soia-dev-release-plan-checklist
 description: 为互联网软件发版生成发布清单、预检门、灰度验证与发布后核对；适用于上线、部署、回滚规划。
-version: 1.0.0
+version: 2.0.0
 created_at: 2026-07-23 00:03:23
-updated_at: 2026-07-23 00:03:23
+updated_at: 2026-07-25 13:04:00
 created_by: gpt-5.6-luna
-updated_by: gpt-5.6-luna
+updated_by: claude opus 5
 ---
 
-# soia-dev-plan-release-checklist
+# soia-dev-release-plan-checklist
 
 为互联网软件交付生成可执行、可核对的发布清单。输入是发布范围和已知约束，输出是待确认项明确的发布计划；它不执行部署、修改生产环境或代替发布审批。
 
@@ -49,13 +49,13 @@ release:
 这是纯方法论技能，无强依赖、可选增强或第三方工具依赖，也无需创建私有配置。
 
 ```bash
-npx skills add soia-team/soia-open-dev-release-skills -g -a '*' -s soia-dev-plan-release-checklist -y
+npx skills add soia-team/soia-open-dev-release-skills -g -a '*' -s soia-dev-release-plan-checklist -y
 ```
 
 配置约定采用 schema v2；如客户需要保存团队默认项，可在其自有机器创建下列文件，未创建时按请求中的输入工作：
 
 ```text
-~/.config/soia-skills/soia-dev-plan-release-checklist/config.yml
+~/.config/soia-skills/soia-dev-release-plan-checklist/config.yml
 ```
 
 不要在配置或交付物中记录凭据、令牌、内部地址或真实客户数据。

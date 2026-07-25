@@ -1,14 +1,14 @@
 ---
-name: soia-dev-draft-test-doc
+name: soia-dev-test-draft-doc
 description: 从需求、PRD 或变更说明生成测试计划、测试用例与验收对照；适用于测试设计、回归清单和质量评审。
-version: 1.0.0
+version: 2.0.0
 created_at: 2026-07-23 00:03:56
-updated_at: 2026-07-23 00:03:56
+updated_at: 2026-07-25 13:04:00
 created_by: gpt-5.6-luna
-updated_by: gpt-5.6-luna
+updated_by: claude opus 5
 ---
 
-# soia-dev-draft-test-doc
+# soia-dev-test-draft-doc
 
 将用户提供的需求、PRD、原型说明或变更描述转为可评审的互联网通用测试文档。交付物覆盖测试计划、正常/边界/异常/数据流用例、回归清单和需求验收对照；不替代业务方确认含糊的产品规则。
 
@@ -87,7 +87,7 @@ updated_by: gpt-5.6-luna
 - 不读取公司知识库、浏览器资料、私有仓库、账号、凭据或未授权文件；示例使用虚构角色、订单和数据。
 - 若客户提供材料含个人信息、生产数据、令牌或内部标识，仅抽取完成测试设计所需的最小规则，并在输出中用角色名、占位符或脱敏数据替代。
 - 临时草稿如需落盘，使用操作系统临时目录并在本次完成后删除；不将运行数据、缓存或凭据写入技能安装目录或仓库。
-- 私有配置仅可位于 `~/.config/soia-skills/soia-dev-draft-test-doc/config.yml`，且本技能无需配置，不应创建该文件。
+- 私有配置仅可位于 `~/.config/soia-skills/soia-dev-test-draft-doc/config.yml`，且本技能无需配置，不应创建该文件。
 
 ## 依赖与安装
 
@@ -96,10 +96,10 @@ updated_by: gpt-5.6-luna
 安装：
 
 ```bash
-npx skills add soia-team/soia-open-dev-testing-skills -g -a '*' -s soia-dev-draft-test-doc -y
+npx skills add soia-team/soia-open-dev-testing-skills -g -a '*' -s soia-dev-test-draft-doc -y
 ```
 
-配置约定：schema v2 路径为 `~/.config/soia-skills/soia-dev-draft-test-doc/config.yml`。本技能无配置项，无需创建 `config.yml`；不要在其中存放需求原文、生产数据或凭据。
+配置约定：schema v2 路径为 `~/.config/soia-skills/soia-dev-test-draft-doc/config.yml`。本技能无配置项，无需创建 `config.yml`；不要在其中存放需求原文、生产数据或凭据。
 
 ## 日志与完成回执
 
