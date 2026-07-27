@@ -49,7 +49,17 @@ release:
 这是纯方法论技能，无强依赖、可选增强或第三方工具依赖，也无需创建私有配置。
 
 ```bash
-npx skills add soia-team/soia-open-dev-release-skills -g -a '*' -s soia-dev-release-plan-checklist -y
+claude plugin marketplace add soia-team/soia-open-skills
+```
+
+```bash
+claude plugin install soia-dev@soia
+```
+
+只要这一个技能时，可用 npx 路线。注意技能会落进共享真源 `~/.agents/skills`；若同时装了插件，同一技能会出现两份索引且各自漂移，建议二选一：
+
+```bash
+npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-release-plan-checklist -y
 ```
 
 配置约定采用 schema v2；如客户需要保存团队默认项，可在其自有机器创建下列文件，未创建时按请求中的输入工作：

@@ -45,10 +45,20 @@ command with no orchestration, monitoring, or prompt-injection concerns.
 
 ### 依赖与安装
 
-安装本技能（单个技能）：
+安装（推荐：装整个领域插件，一次装好本仓全部技能）：
 
 ```bash
-npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s soia-dev-agent-cli-dispatch -y
+claude plugin marketplace add soia-team/soia-open-skills
+```
+
+```bash
+claude plugin install soia-dev@soia
+```
+
+只要这一个技能时，可用 npx 路线。注意技能会落进共享真源 `~/.agents/skills`；若同时装了插件，同一技能会出现两份索引且各自漂移，建议二选一：
+
+```bash
+npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-agent-cli-dispatch -y
 ```
 
 `npx skills` 会更新 `~/.agents/skills` 共享源，但不管理所有自定义目标。已安装开源 `soia-meta-sync-skills` 的环境可在明确指定目标后执行单项同步：

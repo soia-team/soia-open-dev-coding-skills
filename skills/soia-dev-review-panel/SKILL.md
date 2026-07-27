@@ -45,10 +45,20 @@ package with no GitHub involvement at all.
 
 ### 依赖与安装
 
-安装本技能（单个技能）：
+安装（推荐：装整个领域插件，一次装好本仓全部技能）：
 
 ```bash
-npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s soia-dev-review-panel -y
+claude plugin marketplace add soia-team/soia-open-skills
+```
+
+```bash
+claude plugin install soia-dev@soia
+```
+
+只要这一个技能时，可用 npx 路线。注意技能会落进共享真源 `~/.agents/skills`；若同时装了插件，同一技能会出现两份索引且各自漂移，建议二选一：
+
+```bash
+npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-review-panel -y
 ```
 
 强依赖 `soia-dev-coding-protocol`：本技能的"测试覆盖与反面模式"视角直接复用它的 Anti-Fake-Fix Gate 和提交前自审清单，不重复维护第二份。安装本技能会自动带上这个依赖。
@@ -142,4 +152,4 @@ npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s soia-dev-revie
 |---|---|
 | `soia-dev-coding-protocol` | 强依赖。"测试覆盖与反面模式"视角直接复用它的 Anti-Fake-Fix Gate 和提交前自审清单，不重复维护 |
 | `soia-dev-github-ops` | 单向依赖，方向与本表其他行相反：它的 Pre-Merge Rule Review hard-依赖本技能（装不了就停下，不会退化成自己维护一份清单），负责"拉 PR diff + 找目标仓库自己的规则文件"，把结果交给本技能做 Step 1-4 的视角审查和对抗式复核。本技能不反向依赖它，也不知道怎么用 `gh` CLI 拉 PR，那部分留给它 |
-| `soia-private-skills` 的 `soia-dev-code-review` | 不是同一个技能的开源版，两者可以同时安装（名字不同，不冲突）。那个技能专门服务已确认的 SOIA 产品 workspace 内 proposal/Wave/fix 治理评审，6 维度按团队内部经验把具体模型绑定到具体维度；本技能是通用方法论，不含任何产品/团队专属信息，也不假设特定模型分工。vault、`soia-open-dev-coding-skills`、`soia-private-skills` 与普通仓库的评审用本技能，已确认的 SOIA 产品治理评审用那个 |
+| `soia-private-skills` 的 `soia-dev-code-review` | 不是同一个技能的开源版，两者可以同时安装（名字不同，不冲突）。那个技能专门服务已确认的 SOIA 产品 workspace 内 proposal/Wave/fix 治理评审，6 维度按团队内部经验把具体模型绑定到具体维度；本技能是通用方法论，不含任何产品/团队专属信息，也不假设特定模型分工。vault、`soia-open-dev-skills`、`soia-private-skills` 与普通仓库的评审用本技能，已确认的 SOIA 产品治理评审用那个 |
