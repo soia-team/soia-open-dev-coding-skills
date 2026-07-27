@@ -27,7 +27,17 @@ bash skills/soia-dev-project-scaffold/shells/init-project-baseline.sh <project-p
 ### 依赖与安装
 
 ```bash
-npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s soia-dev-project-scaffold -y
+claude plugin marketplace add soia-team/soia-open-skills
+```
+
+```bash
+claude plugin install soia-dev@soia
+```
+
+只要这一个技能时，可用 npx 路线。注意技能会落进共享真源 `~/.agents/skills`；若同时装了插件，同一技能会出现两份索引且各自漂移，建议二选一：
+
+```bash
+npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-project-scaffold -y
 ```
 
 依赖 POSIX shell、`mkdir` 和 `git`（仅用于检查，不初始化仓库）。不需要私有配置；项目特定规则应由客户在生成后的 `AGENTS.md` 中补充。

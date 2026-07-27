@@ -96,7 +96,17 @@ updated_by: claude opus 5
 安装：
 
 ```bash
-npx skills add soia-team/soia-open-dev-testing-skills -g -a '*' -s soia-dev-test-draft-doc -y
+claude plugin marketplace add soia-team/soia-open-skills
+```
+
+```bash
+claude plugin install soia-dev@soia
+```
+
+只要这一个技能时，可用 npx 路线。注意技能会落进共享真源 `~/.agents/skills`；若同时装了插件，同一技能会出现两份索引且各自漂移，建议二选一：
+
+```bash
+npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-test-draft-doc -y
 ```
 
 配置约定：schema v2 路径为 `~/.config/soia-skills/soia-dev-test-draft-doc/config.yml`。本技能无配置项，无需创建 `config.yml`；不要在其中存放需求原文、生产数据或凭据。

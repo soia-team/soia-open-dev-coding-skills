@@ -44,10 +44,20 @@ Use gh CLI for GitHub issue, PR, checks, review, workflow run, release, and coll
 
 ### 依赖与安装
 
-安装本技能（单个技能）：
+安装（推荐：装整个领域插件，一次装好本仓全部技能）：
 
 ```bash
-npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s soia-dev-github-ops -y
+claude plugin marketplace add soia-team/soia-open-skills
+```
+
+```bash
+claude plugin install soia-dev@soia
+```
+
+只要这一个技能时，可用 npx 路线。注意技能会落进共享真源 `~/.agents/skills`；若同时装了插件，同一技能会出现两份索引且各自漂移，建议二选一：
+
+```bash
+npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-github-ops -y
 ```
 
 配置约定：
@@ -276,7 +286,7 @@ the graded-confidence (seen/inferred/unconfirmed) finding format — this
 procedure doesn't maintain a second copy of either.
 
 If `soia-dev-review-panel` isn't installed, stop and tell the user to install
-it (`npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s soia-dev-review-panel -y`)
+it (`npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-review-panel -y`)
 rather than falling back to an ad-hoc checklist.
 
 ### Step 4 — Report
@@ -357,7 +367,7 @@ skill owns none of that — it only supplies the findings and the checked-out
 branch.
 
 If `soia-dev-fix-loop` isn't installed, stop and tell the user to install it
-(`npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s soia-dev-fix-loop -y`)
+(`npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-fix-loop -y`)
 rather than hand-rolling a fix loop.
 
 A reviewer finding is a claim, not a verdict: fix-loop may legitimately

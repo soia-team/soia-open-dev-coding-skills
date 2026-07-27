@@ -37,7 +37,17 @@ updated_by: gpt-5.6-luna
 安装：
 
 ```bash
-npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s soia-dev-fix-loop -y
+claude plugin marketplace add soia-team/soia-open-skills
+```
+
+```bash
+claude plugin install soia-dev@soia
+```
+
+只要这一个技能时，可用 npx 路线。注意技能会落进共享真源 `~/.agents/skills`；若同时装了插件，同一技能会出现两份索引且各自漂移，建议二选一：
+
+```bash
+npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-fix-loop -y
 ```
 
 本技能无需其他专用安装或私有配置。强依赖是可访问的 findings、目标工作区和与风险相称的验证入口；遵循目标仓库已有的贡献说明和检查约定。

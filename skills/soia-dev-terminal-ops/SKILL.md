@@ -38,7 +38,17 @@ updated_by: codex gpt-5
 安装本技能：
 
 ```bash
-npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s soia-dev-terminal-ops -y
+claude plugin marketplace add soia-team/soia-open-skills
+```
+
+```bash
+claude plugin install soia-dev@soia
+```
+
+只要这一个技能时，可用 npx 路线。注意技能会落进共享真源 `~/.agents/skills`；若同时装了插件，同一技能会出现两份索引且各自漂移，建议二选一：
+
+```bash
+npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-terminal-ops -y
 ```
 
 强依赖：POSIX shell、`ps`、`kill`。tmux 工作流要求 `tmux`。网络连接检查可选使用 `lsof`；缺少时标为“网络信号未检查”，不能据此判死锁。
