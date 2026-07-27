@@ -19,5 +19,6 @@
     "defaultPrompt": [
       "请审查当前代码改动，并给出可验证的修复建议。"
     ]
-  }
+  },
+  "homepage": "https://github.com/soia-team/soia-open-dev-skills"
 }
