@@ -1,11 +1,11 @@
 ---
 name: soia-dev-review-panel
-description: Multi-lens, adversarially-verified review of a code diff or skill package. Never edits/merges/publishes. Triggers：「多角度审一下这个改动」「用几个视角复查」「对抗式复核一下」「审一下这个技能包」
-version: 1.0.1
+description: 对代码改动或技能包做多视角对抗式复核，只出评审意见不改动代码。触发：「多角度审一下」「对抗式复核」
+version: 1.0.2
 created_at: 2026-07-21 19:04:05
-updated_at: 2026-07-22 21:13:22
+updated_at: 2026-07-27 10:52:24
 created_by: claude fable 5
-updated_by: gpt-5.6-luna
+updated_by: claude opus 5
 dependencies:
   hard: [soia-dev-coding-protocol]
 ---
