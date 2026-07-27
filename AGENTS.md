@@ -1,4 +1,4 @@
-# AGENTS.md - soia-open-dev-coding-skills
+# AGENTS.md - soia-open-dev-skills
 
 Rules for all AI agents editing this repository.
 
@@ -12,7 +12,7 @@ do not make this a Codex-only file.
 
 ## Repository Purpose
 
-`soia-open-dev-coding-skills` publishes reusable `soia-dev-*` skills for the dev domain. Every committed skill must be safe for users who do not share the maintainer's machine, accounts, private data, or internal workspace.
+`soia-open-dev-skills` publishes reusable `soia-dev-*` skills for the dev domain. Every committed skill must be safe for users who do not share the maintainer's machine, accounts, private data, or internal workspace.
 ## Routing Boundary
 
 Maintaining this repository is skill-package work, not SOIA product work. The
@@ -63,7 +63,7 @@ the actual target is an explicitly confirmed SOIA product workspace.
 - No private family, home, health, finance, or learner profile context.
 - Put user-specific behavior behind CLI args, env vars, or skill-specific
   user-owned config files outside this repo:
-  `~/.config/soia-skills/soia-open-dev-coding-skills/<skill-type>/<skill-name>/config.yml`.
+  `~/.config/soia-skills/soia-open-dev-skills/<skill-type>/<skill-name>/config.yml`.
 - Repository examples must use placeholders such as `<path>`, `<repo>`, and
   `<YOUR_KEY>`.
 
@@ -90,8 +90,8 @@ Final installation acceptance must use the pushed remote repo, not a local
 checkout copied into an agent target:
 
 ```bash
-npx skills add soia-team/soia-open-dev-coding-skills -l --full-depth
-npx skills add soia-team/soia-open-dev-coding-skills -g --all
+npx skills add soia-team/soia-open-dev-skills -l --full-depth
+npx skills add soia-team/soia-open-dev-skills -g --all
 ```
 
 ## Git Workflow
@@ -125,13 +125,13 @@ Rules:
 - After merge/push, verify the real install from the remote package:
 
 ```bash
-npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s <skill-name> -y
+claude plugin update soia-dev@soia   # 交付走插件市场，勿装全局
 ```
 
 Forbidden outside local testing:
 
 ```bash
-npx skills add /absolute/local/path/to/soia-open-dev-coding-skills -g -a '*' -s <skill-name> -y
+npx skills add /absolute/local/path/to/soia-open-dev-skills -g -a '*' -s <skill-name> -y
 ```
 
 If validating SOIA AI consumption, sync from `~/.agents/skills` into
@@ -145,7 +145,7 @@ shortcut with manual symlinks.
 ### 1. Create on a branch
 
 ```bash
-cd <your-local-checkout>/soia-open-dev-coding-skills
+cd <your-local-checkout>/soia-open-dev-skills
 git checkout -b feat/<topic>
 # create skills/<new-skill-name>/SKILL.md, references/, scripts/ etc.
 git add skills/<new-skill-name>/
@@ -171,15 +171,29 @@ and will not be tracked by `npx skills check`.
 Open a PR (if branch protection requires it) or merge directly. The skill
 becomes available from the remote package only after it lands on main.
 
-### 4. Install from remote (the only correct final install)
+### 4. Publish through the plugin marketplace
 
-```bash
-npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s <new-skill-name> -y
-```
+Skills reach users through the SOIA plugin marketplace, not through a global
+`npx skills add -g`. Once the change is on main:
 
-This registers the skill in `~/.agents/.skill-lock.json` and creates proper
-symlinks in `~/.claude/skills/` and `~/.agents/skills/`. Future updates via
-`npx skills check` will track it.
+1. **Bump `version`** in `.claude-plugin/plugin.json` and
+   `.codex-plugin/plugin.json`. This is mandatory. Claude Code compares the
+   plugin `version` field, not the marketplace sha pin — without a bump,
+   `claude plugin update` answers "already at the latest version" and users
+   never receive the change even though the pin moved.
+2. **Refresh the marketplace sha pin** in the meta repo `soia-open-skills`.
+   Its `main` is protected, so the refresh has to go through a PR; CI cannot
+   push it. The `soia-meta-skill-release` skill drives the whole sequence —
+   say 「发布技能」 or 「更新插件」 rather than running the steps by hand.
+3. **Users update** with `claude plugin update soia-dev@soia` or
+   `codex plugin add soia-dev@soia`.
+
+Do not install SOIA skills into your own `~/.agents/skills` with
+`npx skills add -g`. That directory is reserved for a small set of third-party
+skills; a SOIA skill placed there becomes a second copy that drifts from the
+plugin version and appears twice in every agent's index. (End users who prefer
+per-skill installs may still use the npx route — see `docs/install/` in the
+meta repo. That is a consumer choice, not the maintainer's delivery path.)
 
 ### Why not manual symlinks?
 
@@ -247,12 +261,17 @@ rm -rf ~/.agents/skills/<old-name>
 rm -f  ~/.claude/skills/<old-name>
 ```
 
-12. Install new skills from remote:
+12. Publish the rename through the plugin marketplace:
 
 ```bash
-npx skills add soia-team/soia-open-dev-coding-skills -g -a '*' -s <new-name-1> -s <new-name-2> -y
+# bump version in .claude-plugin/plugin.json and .codex-plugin/plugin.json first,
+# then let soia-meta-skill-release refresh the pin and guide client updates
+claude plugin update soia-dev@soia
 ```
 
+Renames only reach users after the pin refresh lands on the meta repo's main.
+Do not `npx skills add -g` the new names — that puts a drifting second copy in
+`~/.agents/skills`.
 **Phase 4 — Update downstream docs**
 
 13. Update your maintainer-local architecture notes (kept outside this repo).
