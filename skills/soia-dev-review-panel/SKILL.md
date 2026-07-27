@@ -1,11 +1,11 @@
 ---
 name: soia-dev-review-panel
-description: 对代码改动或技能包做多视角对抗式复核，只出评审意见不改动代码。触发：「多角度审一下」「对抗式复核」
+description: 从多视角对代码 diff 或技能包进行对抗式复核，只读且不编辑、合并或发布。触发：「多角度审改动」「对抗式复核」「审技能包」
 version: 1.0.2
 created_at: 2026-07-21 19:04:05
-updated_at: 2026-07-27 10:52:24
+updated_at: 2026-07-27 10:47:17
 created_by: claude fable 5
-updated_by: claude opus 5
+updated_by: gpt-5.6-sol
 dependencies:
   hard: [soia-dev-coding-protocol]
 ---
@@ -35,6 +35,8 @@ package with no GitHub involvement at all.
 | 只想知道审了哪些方面、有没有漏检 | 报告里明确列出"检查过、没问题"的部分，不是只报问题 | 覆盖范围说明 |
 
 ### 客户如何使用
+
+其他可识别说法包括「用几个视角复查」「审一下这个技能包」；本技能只报告发现，不执行编辑、合并或发布。
 
 1. 说明审查目标：本地未提交的改动、一段已经拿到手的 diff 文本、或一个技能目录路径（如 `skills/<name>/`）。
 2. 如果目标类型不明确（代码改动 vs 技能包 vs 两者都有），先问一句再往下走，不要自己猜。
