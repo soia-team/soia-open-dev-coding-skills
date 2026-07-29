@@ -63,16 +63,16 @@
 |---|---|---|
 | `soia-dev-agent-cli-dispatch` | 外部 AI CLI 调度与模型路由，支持受控派活与用量回执。 | 🟡 |
 | `soia-dev-agent-md-advisor` | AI 项目指令与配置设计顾问，提供诊断、起草和改写建议。 | ✅ |
-| `soia-dev-coding-protocol` | 为普通工程代码改动建立最小范围、验证前置、anti-fake-fix 与写后复核契约；适用于修复、重构、实现和评审。 | ✅ |
-| `soia-dev-doc-sync` | 审计并修复任意代码仓的 docs、README、CHANGELOG、VERSION 与明确真源之间的事实漂移；先建立真源优先级与证据，再按依赖顺序同步派生文档。 | ✅ |
-| `soia-dev-fix-loop` | 用五步闭环处理代码审查或测试发现：复现、决策、修复、回归复核与回执，防止遗漏、假修复和无证据收口。 | ✅ |
+| `soia-dev-coding-protocol` | 为普通工程代码改动建立最小范围、验证前置、anti-fake-fix 与写后复核契约。 | ✅ |
+| `soia-dev-doc-sync` | 审计并修复文档与代码真源之间的事实漂移。 | ✅ |
+| `soia-dev-fix-loop` | 五步闭环处理评审或测试发现，防止遗漏与假修复。 | ✅ |
 | `soia-dev-github-ops` | GitHub gh CLI 运维、PR 合规审查与修复。 | 🟡 |
-| `soia-dev-project-scaffold` | 为任意新 Git 项目生成最小 AI 协作基线：可编辑的 AGENTS.md 和 docs 导航目录；在写入前确认目标路径。 | ✅ |
-| `soia-dev-release-plan-checklist` | 为互联网软件发版生成发布清单、预检门、灰度验证与发布后核对；适用于上线、部署、回滚规划。 | ✅ |
+| `soia-dev-project-scaffold` | 为新项目生成最小 AI 协作基线：AGENTS.md 与 docs 导航。 | ✅ |
+| `soia-dev-release-plan-checklist` | 为互联网软件发版生成发布清单、预检门、灰度验证与发布后核对。 | ✅ |
 | `soia-dev-review-panel` | 从多视角对代码 diff 或技能包进行对抗式复核，只读且不编辑、合并或发布。 | ✅ |
 | `soia-dev-task-execute` | 执行任意工程任务的通用闭环：定义边界、实施最小改动、验证、独立复核与回执。 | ✅ |
-| `soia-dev-terminal-ops` | 管理 POSIX/macOS/Linux 上的长任务、tmux 后台会话、日志抓取、停滞诊断与安全恢复；在终止进程前用日志、CPU、网络等多信号交叉判断，并执行 TERM→复查→KILL 确认门。 | ✅ |
-| `soia-dev-test-draft-doc` | 从需求、PRD 或变更说明生成测试计划、测试用例与验收对照；适用于测试设计、回归清单和质量评审。 | ✅ |
+| `soia-dev-terminal-ops` | 管理长任务、tmux 会话、日志抓取与停滞诊断。 | ✅ |
+| `soia-dev-test-draft-doc` | 从需求、PRD 或变更说明生成测试计划、测试用例与验收对照。 | ✅ |
 
 ## 安装
 
