@@ -74,6 +74,17 @@ Pick an entry point by what you are doing:
 | `soia-dev-terminal-ops` | Manage POSIX/macOS/Linux long-running tasks, tmux sessions, log capture, stall diagnosis, and safe recovery. | ✅ |
 | `soia-dev-test-draft-doc` | Generate test plans, test cases, and acceptance mappings from requirements, PRDs, or change notes. | ✅ |
 
+## Trigger phrases
+
+Once installed, just speak naturally — the agent routes to a skill by these phrases (the full trigger list lives in each skill's `SKILL.md` `description`):
+
+| You say | Skill |
+|---|---|
+| `派活给外部 AI` / `调用 agy` / `多 CLI 派发` | `soia-dev-agent-cli-dispatch` |
+| `审查我的 AGENTS.md` / `CLAUDE.md 怎么写` / `多个 AI 入口怎么管` | `soia-dev-agent-md-advisor` |
+| `查 CI 挂了` / `发 release` / `加协作者权限` | `soia-dev-github-ops` |
+| `多角度审改动` / `对抗式复核` / `审技能包` | `soia-dev-review-panel` |
+
 ## Install
 
 Installing the whole domain plugin is recommended — it brings every skill in this repo:
@@ -100,6 +111,19 @@ twice and the two copies drift apart — pick one:
 ```bash
 npx skills add soia-team/soia-open-dev-skills -g -a '*' -s <skill-name> -y
 ```
+
+## Validate & contribute
+
+After changing a skill, run before committing:
+
+```bash
+python3 -m unittest discover -s tests -p 'test_*.py'
+python3 scripts/generate_skill_catalog.py --check
+python3 scripts/audit_skills.py --strict
+```
+
+Contribution flow, the skill contract, and release steps are in the portal's
+[CONTRIBUTING.md](https://github.com/soia-team/soia-open-skills/blob/main/CONTRIBUTING.md).
 
 ## Ecosystem
 

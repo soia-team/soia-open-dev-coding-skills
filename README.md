@@ -74,6 +74,17 @@
 | `soia-dev-terminal-ops` | 管理长任务、tmux 会话、日志抓取与停滞诊断。 | ✅ |
 | `soia-dev-test-draft-doc` | 从需求、PRD 或变更说明生成测试计划、测试用例与验收对照。 | ✅ |
 
+## 触发词映射
+
+装完直接用自然语言说话即可，Agent 按下表触发对应技能（完整触发词见各技能 `SKILL.md` 的 `description`）：
+
+| 你说 | 触发技能 |
+|---|---|
+| `派活给外部 AI` / `调用 agy` / `多 CLI 派发` | `soia-dev-agent-cli-dispatch` |
+| `审查我的 AGENTS.md` / `CLAUDE.md 怎么写` / `多个 AI 入口怎么管` | `soia-dev-agent-md-advisor` |
+| `查 CI 挂了` / `发 release` / `加协作者权限` | `soia-dev-github-ops` |
+| `多角度审改动` / `对抗式复核` / `审技能包` | `soia-dev-review-panel` |
+
 ## 安装
 
 推荐装整个领域插件，一次装好本仓全部技能：
@@ -99,6 +110,19 @@ codex plugin add soia-dev@soia
 ```bash
 npx skills add soia-team/soia-open-dev-skills -g -a '*' -s <技能名> -y
 ```
+
+## 验证与贡献
+
+改动技能后，提交前跑：
+
+```bash
+python3 -m unittest discover -s tests -p 'test_*.py'
+python3 scripts/generate_skill_catalog.py --check
+python3 scripts/audit_skills.py --strict
+```
+
+贡献流程、技能契约与发布步骤见元仓
+[CONTRIBUTING.md](https://github.com/soia-team/soia-open-skills/blob/main/CONTRIBUTING.md)。
 
 ## 生态导航
 
