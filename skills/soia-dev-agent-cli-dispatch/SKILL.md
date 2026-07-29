@@ -3,11 +3,11 @@ name: soia-dev-agent-cli-dispatch
 description: 外部 AI CLI 调度与模型路由，支持受控派活与用量回执。触发：「派活给外部 AI」「调用 agy」「多 CLI 派发」
 dependencies:
   optional: [soia-meta-sync-skills]
-version: 1.1.2
+version: 1.1.3
 created_at: 2026-07-10 11:28:32
-updated_at: 2026-07-23 07:16:02
+updated_at: 2026-07-29 22:30:00
 created_by: claude opus 4.6
-updated_by: gpt-5.6-luna
+updated_by: claude-opus-5
 ---
 
 # soia-dev-agent-cli-dispatch
@@ -121,7 +121,7 @@ SOIA_DEV_AGENT_CLI_DISPATCH_CONFIG_FILE=<custom-config-path>
 
 不要假设某个 CLI 一定可服务。派发前按下面顺序自查，把结果记在你自己的可用性记录里，而不是照抄本文档里的任何示例状态（示例会过期）：
 
-1. **CLI 是否已安装**：`which <command>` 或 `<command> --version`；版本号以实际输出为准。
+1. **CLI 是否已安装**：`which <command>` 或 `<command> --version`；版本号以实际输出为准。**每次派发前都要跑，包括你昨天刚用过的执行器**——实战教训（2026-07-29）：codex 因用户迁移/重装从机器上整体消失，主控凭「昨天还在」直接后台派发，任务静默空跑失败。后台派发命令应内嵌护栏：`command -v <cli> >/dev/null || { echo "CLI missing"; exit 9; }`，让缺失立即显性失败而不是烧掉一轮等待。
 2. **认证 / 套餐是否有效**：优先使用官方的本地状态命令。若 CLI 没有不调用模型的 auth-status 命令（当前 `agy` 即如此），不得把 `<command> -p "ping"` 伪装成“零额度只读检查”；模型调用可能消耗额度，必须先获客户确认。需要浏览器登录时在 PTY 启动，状态记为 `blocked_user_action`，由客户本人完成账号选择与授权。
 3. **上一次派发是否失败**：如果最近一次该执行器的任务返回非预期错误或反复超时，先记为暂不可服务，等你验证修复后再恢复派发。
 4. **维护你自己的可用性表**：建议自建一张「执行器 / CLI 可用 / 套餐-Key 状态 / 可服务 / 备注」的表格，随你的编排层状态变化更新。
@@ -171,11 +171,11 @@ Standard/Enterprise、Gemini API Key 和 Vertex AI 通道仍保留在 `gemini`
 ```
 任务类型判断
 ├── 简单且非破坏性任务（写配置/简单脚本；删除、覆盖等破坏性动作不得归入此类）
-│   └── opencode run "..."  或  kimi -w <wt> --plan -p "..."（确认后改 --print）
+│   └── opencode run "..."  或  cd <wt> && kimi --plan -p "..."（kimi ≥0.28 已移除 -w/--print，见 references/kimi-cli.md）
 │       详见 references/opencode-qwen.md / references/kimi-cli.md / references/qodercli.md
 │
 ├── 中等任务（rsync/build/verify/小范围重构）
-│   └── opencode run "..."  或  kimi -w <wt> -m kimi-k2.6 --thinking --print -p "..."
+│   └── opencode run "..."  或  cd <wt> && kimi -m kimi-k2.6 -y -p "..."
 │       详见 references/opencode-qwen.md / references/kimi-cli.md / references/qodercli.md
 │
 ├── 文档/内容写作
@@ -185,7 +185,7 @@ Standard/Enterprise、Gemini API Key 和 Vertex AI 通道仍保留在 `gemini`
 │       详见 references/antigravity-cli.md / references/gemini-cli.md / references/opencode-qwen.md
 │
 ├── 中等复杂度编码 / 快速迭代
-│   └── kimi -w <wt> -m kimi-k2.6 --thinking --skills-dir <your-skills-dir> --print -p "..."
+│   └── cd <wt> && kimi -m kimi-k2.6 -y --skills-dir <your-skills-dir> -p "..."
 │       详见 references/kimi-cli.md
 │
 ├── 复杂代码编辑（常见默认候选）
@@ -299,7 +299,7 @@ python3 scripts/route_model.py --executor claude --complexity medium --model cla
 | agy | — | — | — | `availability_discovered`（`agy models` 已无 prompt 验证；账号级显示名见 `references/antigravity-cli.md`，但未做真实模型 benchmark，禁止自动路由） |
 | gemini | gemini-2.5-flash-lite | gemini-2.5-flash | gemini-2.5-pro / gemini-3.1-pro-preview | `blocked_auth`（2026-07-10 实测：消费者 OAuth 浏览器回调成功后被服务端以弃用策略拒绝；Standard/Enterprise、API Key、Vertex AI 仍是受支持的独立通道，本轮未测） |
 | kimi | kimi-k2.6（默认档） | kimi-k2.6 --thinking | kimi-k2.6 --thinking（更长上下文/更多轮次） | `pending_benchmark`（未测） |
-| opencode / qwen | 默认模型 | qwen-max 或等效中阶模型 | 项目已配置的最强可用模型 | `pending_benchmark`（未测） |
+| opencode / qwen | 默认模型 | qwen-max 或等效中阶模型 | 项目已配置的最强可用模型 | `pending_benchmark`（未测）；⚠️ 实测本机 opencode 默认模型可能是弱模型（曾见 qwen3-27b），派发前先确认其实际模型配置，客户明确否决弱模型时不得使用 |
 
 ### 大型远端文件 / 云盘语义路由（操作策略，非 benchmark）
 

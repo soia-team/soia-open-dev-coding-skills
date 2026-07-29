@@ -1,5 +1,7 @@
 # Kimi CLI 执行规范 / Kimi CLI rules
 
+> ⚠️ **参数漂移警告（2026-07-29 实测 kimi 0.28.1）**：`-w`、`--print`、`--thinking`、`--final-message-only` 均已移除——旧模板直接 `error: unknown option`。现行等价形态：工作目录用 `cd <workdir> &&`（或 `--add-dir`）；非交互单发用 `-p/--prompt`；写入任务需 `-y/--yolo` 自动批准（或 `--auto`）；plan 模式仍是 `--plan`。**派发前先 `kimi --help` 对一遍，本文其余示例按此对照翻译使用。**
+
 ## 基本信息
 
 - 本机路径：`~/.local/bin/kimi`
