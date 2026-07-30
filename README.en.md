@@ -1,137 +1,110 @@
-# SOIA Development Coding Skills
+<div align="center">
 
-[中文](README.md) · English
+<img src="assets/icon.png" width="88" alt="">
 
-Discipline for AI coding: scope the change before touching anything, produce evidence afterwards, never let "looks fine" count as done.
+# SOIA Open Dev Skills
 
-## What this is
+**Stop letting the agent close a change with "should be fine"**
 
-`soia-open-dev-skills` is a set of engineering contracts covering the software development lifecycle. It does not write your business logic — it constrains *how* an AI changes code, above all to prevent fake fixes:
+12 skills that weld scope, verification and review into the flow: define the boundary first, produce evidence after
 
-```text
-Scope (smallest possible change, state what stays untouched)
-    ↓
-Change (match surrounding code, introduce no new style)
-    ↓
-Verify (run tests, cite file:line — "should be fine" is not evidence)
-    ↓
-Review (adversarial pass from independent angles)
-    ↓
-Receipt (what changed, which files, what is left)
+[中文](README.md) · English · [Ecosystem portal](https://github.com/soia-team/soia-open-skills)
+
+</div>
+
+---
+
+## What it solves
+
+The most misleading state in AI-assisted coding: **the command ran, a conclusion was written, and nobody verified anything.** What's missing is not a smarter model — it's a flow that does not let steps be skipped.
+
+```mermaid
+flowchart LR
+    A["Requirement · Bug<br/>Review finding"] --> B["Set the boundary<br/>what changes, what doesn't"]
+    B --> C["Minimal change"]
+    C --> D["Verify<br/>actually run it, not 'should'"]
+    D --> E["Independent review<br/>adversarial, multi-lens"]
+    E --> F["Receipt<br/>done / skipped / failed, each listed"]
+    D -.fails.-> C
 ```
 
-The skills compose: `task-execute` is the general loop, `fix-loop` handles review findings, `review-panel` does the adversarial pass, and `coding-protocol` is the underlying contract.
+## 12 skills
 
-### When to use it
+### 01 Change loop　`Requirement or bug → a change with scope, verification and review`
 
-- "Fix this bug — and don't refactor anything else along the way."
-- "CI is failing; find out why."
-- "Address every review comment on this PR, miss nothing."
-- "Review this diff from several angles — I suspect it's fragile."
-- "Set up an AGENTS.md baseline for this new project."
-- "Docs drifted from the code; sync them."
-- "Dispatch this task to an external AI CLI."
+| Skill | Responsibility | Ready |
+|---|---|:-:|
+| `soia-dev-task-execute` | General engineering loop: define boundary, minimal change, verify, independent review, receipt | ✅ |
+| `soia-dev-coding-protocol` | Establishes minimal-scope, verify-first, anti-fake-fix and post-write review contracts | ✅ |
+| `soia-dev-fix-loop` | Five steps for review or test findings: reproduce, decide, fix, regress, receipt | ✅ |
+| `soia-dev-review-panel` | Adversarial multi-lens review of a diff or skill package — read-only, never edits, merges or publishes | ✅ |
 
-### What it does not do
+### 02 Testing and release　`Requirement or change → test plan, release checklist, rollout gates`
 
-- Does not make product decisions. What to change and why is yours; the skills only ensure it is done cleanly and verifiably.
-- Does not merge or release on its own. Review, merge, and release all need your explicit approval.
-- Does not touch production. Release skills produce checklists and pre-flight gates; you run them.
-- Does not cover design or document pipelines — see [soia-open-dev-design-skills](https://github.com/soia-team/soia-open-dev-design-skills).
-- Does not include internal company process; insurance-industry requirement, test, and release standards live in private repos.
+| Skill | Responsibility | Ready |
+|---|---|:-:|
+| `soia-dev-test-draft-doc` | Generates test plans, cases and an acceptance matrix from requirements, PRDs or change notes | ✅ |
+| `soia-dev-release-plan-checklist` | Generates the release checklist, pre-flight gates, canary verification and post-release checks | ✅ |
 
-## Where to start
+### 03 Repository operations　`Repo as-is → consistent docs, compliant PRs, a working baseline`
 
-Pick an entry point by what you are doing:
+| Skill | Responsibility | Ready |
+|---|---|:-:|
+| `soia-dev-github-ops` | GitHub `gh` CLI operations, PR compliance review and remediation | 🟡 |
+| `soia-dev-doc-sync` | Audits and repairs factual drift between docs, README, CHANGELOG, VERSION and the source of truth | ✅ |
+| `soia-dev-project-scaffold` | Generates a minimal AI-collaboration baseline for a new Git project (AGENTS.md + docs nav) | ✅ |
 
-| Your task | Use | Done when |
-|---|---|---|
-| Fix a bug or build a feature | `soia-dev-task-execute` | Scope, minimal change, evidence, review, receipt all present |
-| Work through review or test findings | `soia-dev-fix-loop` | Each finding has reproduce, decide, fix, regress recorded |
-| Get your work picked apart | `soia-dev-review-panel` | Multi-angle findings, read-only |
-| Inspect CI, manage PRs, cut a release | `soia-dev-github-ops` | gh CLI actions are traceable |
-| Start a new project | `soia-dev-project-scaffold` | AGENTS.md and docs navigation in place |
-| Hand work to another AI CLI | `soia-dev-agent-cli-dispatch` | Dispatch produces a receipt with usage |
+### 04 Terminal and multi-agent　`Long tasks and several CLIs → controlled execution and dispatch`
 
-`soia-dev-coding-protocol` is the underlying contract; most skills layer it automatically, so you rarely invoke it directly.
+| Skill | Responsibility | Ready |
+|---|---|:-:|
+| `soia-dev-terminal-ops` | Long tasks, tmux sessions, log capture, stall diagnosis; killing goes through TERM → recheck → KILL | ✅ |
+| `soia-dev-agent-cli-dispatch` | External AI CLI dispatch and model routing, with controlled hand-off and usage receipts | 🟡 |
+| `soia-dev-agent-md-advisor` | Advisor for AI project instructions and config: diagnosis, drafting and rewriting | ✅ |
 
-## Skill catalog
-
-> **Ready to use**: ✅ works right after install · 🟡 needs an API key or a third-party login first
-
-| Skill | Responsibility | Ready to use |
-|---|---|---|
-| `soia-dev-agent-cli-dispatch` | Dispatch external AI CLIs with controlled routing, task handoff, and usage receipts. | 🟡 |
-| `soia-dev-agent-md-advisor` | Diagnose, design, and rewrite AI project instructions such as AGENTS.md and CLAUDE.md. | ✅ |
-| `soia-dev-coding-protocol` | Apply minimal-change, validation-first, and anti-fake-fix contracts to engineering work. | ✅ |
-| `soia-dev-doc-sync` | Audit and repair drift in README, CHANGELOG, VERSION, and related documentation from explicit sources of truth. | ✅ |
-| `soia-dev-fix-loop` | Resolve review or test findings through reproduction, decision, repair, regression checks, and receipts. | ✅ |
-| `soia-dev-github-ops` | Operate pull requests, CI, reviews, releases, and collaborator access with GitHub CLI. | 🟡 |
-| `soia-dev-project-scaffold` | Create a minimal AI collaboration baseline and documentation navigation for new Git projects. | ✅ |
-| `soia-dev-release-plan-checklist` | Produce release checklists, pre-flight gates, canary verification, and post-release reconciliation for web software. | ✅ |
-| `soia-dev-review-panel` | Perform multi-lens, adversarial, read-only reviews of code diffs or skill packages. | ✅ |
-| `soia-dev-task-execute` | Execute general engineering tasks through scoped implementation, validation, independent review, and receipts. | ✅ |
-| `soia-dev-terminal-ops` | Manage POSIX/macOS/Linux long-running tasks, tmux sessions, log capture, stall diagnosis, and safe recovery. | ✅ |
-| `soia-dev-test-draft-doc` | Generate test plans, test cases, and acceptance mappings from requirements, PRDs, or change notes. | ✅ |
-
-## Trigger phrases
-
-Once installed, just speak naturally — the agent routes to a skill by these phrases (the full trigger list lives in each skill's `SKILL.md` `description`).
-
-> Trigger phrases are listed in the language the skill actually matches on. Most are Chinese because that is what these skills were written to recognize; describing the same intent in English works too — the agent matches on meaning, not on the literal string.
-
-| You say | Skill |
-|---|---|
-| `派活给外部 AI` / `调用 agy` / `多 CLI 派发` | `soia-dev-agent-cli-dispatch` |
-| `审查我的 AGENTS.md` / `CLAUDE.md 怎么写` / `多个 AI 入口怎么管` | `soia-dev-agent-md-advisor` |
-| `查 CI 挂了` / `发 release` / `加协作者权限` | `soia-dev-github-ops` |
-| `多角度审改动` / `对抗式复核` / `审技能包` | `soia-dev-review-panel` |
+✅ Works right after install　🟡 Needs a login or API key first; the skill tells you what is missing before it runs
 
 ## Install
 
-Installing the whole domain plugin is recommended — it brings every skill in this repo:
+Any of three hosts. Installing the domain plugin brings all 12 skills at once.
 
 ```bash
-claude plugin marketplace add soia-team/soia-open-skills
+claude plugin marketplace add soia-team/soia-open-skills && claude plugin install soia-dev@soia
 ```
 
 ```bash
-claude plugin install soia-dev@soia
+codex plugin marketplace add soia-team/soia-open-skills && codex plugin add soia-dev@soia
 ```
 
-For Codex:
+WorkBuddy is a desktop app with no CLI, so a skill does the work — tell your agent "install into WorkBuddy", or run:
 
 ```bash
-codex plugin marketplace add soia-team/soia-open-skills
-codex plugin add soia-dev@soia
+python3 <soia-open-skills>/skills/soia-meta-skill-release/scripts/install_workbuddy_experts.py soia-dev
 ```
 
-For a single skill you can use the npx route. Note the skill lands in the shared
-source `~/.agents/skills`; if the plugin is installed too, the same skill shows up
-twice and the two copies drift apart — pick one:
+Restart the client, then summon **Soia · 研发工程师** under Experts → My Experts.
+
+> **Always-on cost ~971 tok**. `claude plugin disable soia-dev@soia` drops it to zero; enable it again any time.
+> For a single skill use npx: `npx skills add soia-team/soia-open-dev-skills -g -a '*' -s <skill-name> -y` — pick one route or the other; running both puts the same skill in the index twice and the copies drift apart.
+
+## What it does not do
+
+- **No fake fixes.** If the shortest path to a green test is editing the assertion or adding a skip, that is not a fix — the skill requires the real cause be stated.
+- **No scope creep.** Drive-by refactors and formatting changes get confirmed first.
+- **Does not make product decisions.** Trade-offs and priorities are yours to call.
+- **Does not touch credentials.** A plaintext key found in the repo gets its location reported, not migrated or deleted.
+- **No internal company process.** Industry-specific requirement, test and release standards live in private repos.
+
+## Contributing
+
+Before committing a skill change:
 
 ```bash
-npx skills add soia-team/soia-open-dev-skills -g -a '*' -s <skill-name> -y
+python3 -m unittest discover -s tests -p 'test_*.py' && python3 scripts/audit_skills.py --strict && python3 scripts/generate_expert_manifest.py --check
 ```
 
-## Validate & contribute
-
-After changing a skill, run before committing:
-
-```bash
-python3 -m unittest discover -s tests -p 'test_*.py'
-python3 scripts/generate_skill_catalog.py --check
-python3 scripts/audit_skills.py --strict
-```
-
-Contribution flow, the skill contract, and release steps are in the portal's
-[CONTRIBUTING.md](https://github.com/soia-team/soia-open-skills/blob/main/CONTRIBUTING.md).
-
-## Ecosystem
-
-Specifications, the full ecosystem catalog, and install guides live in [soia-team/soia-open-skills](https://github.com/soia-team/soia-open-skills).
-The full maintenance workflow is in [CONTRIBUTING.md](https://github.com/soia-team/soia-open-skills/blob/main/CONTRIBUTING.md).
+Full workflow in the portal's [CONTRIBUTING.md](https://github.com/soia-team/soia-open-skills/blob/main/CONTRIBUTING.md).
 
 ## License
 
-MIT License — see [LICENSE](./LICENSE).
+MIT — see [LICENSE](./LICENSE).

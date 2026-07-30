@@ -1,134 +1,110 @@
-# SOIA 开发编码技能库
+<div align="center">
 
-[English](README.en.md) · 中文
+<img src="assets/icon.png" width="88" alt="">
 
-给 AI 编码定纪律：改动前先划边界，改完必须拿出证据，不许把「看起来成功」当完成。
+# SOIA Open Dev Skills
 
-## 这是什么
+**让 AI 改代码，不再「应该没问题」就交差**
 
-`soia-open-dev-skills` 是一套面向软件开发全流程的工程契约。它不替你写业务代码，而是约束 AI 怎么改代码——尤其是防止「假修复」：
+12 个技能把边界、验证与复核焊进流程；先划范围，改完必须拿出证据
 
-```text
-定边界（最小范围、明确不动什么）
-    ↓
-改动（按周围代码的写法，不引入新风格）
-    ↓
-验证（跑测试、给 file:line 证据，不用「应该没问题」交差）
-    ↓
-复核（独立视角对抗式检查，找没改干净的地方）
-    ↓
-回执（做了什么、改了哪些文件、还剩什么）
+[English](README.en.md) · 中文 · [全生态门户](https://github.com/soia-team/soia-open-skills)
+
+</div>
+
+---
+
+## 它解决什么
+
+AI 编码最会骗人的状态：**命令跑通了，结论也写了，但没人验证过**。缺的不是更聪明的模型，是一条不许跳步的流程。
+
+```mermaid
+flowchart LR
+    A["需求 · 缺陷<br/>审查发现"] --> B["定边界<br/>改哪些 · 不改哪些"]
+    B --> C["最小改动"]
+    C --> D["验证<br/>真跑一遍，不看'应该'"]
+    D --> E["独立复核<br/>对抗式多视角"]
+    E --> F["回执<br/>做了/跳过/失败各自列出"]
+    D -.不通过.-> C
 ```
 
-技能之间可组合：`task-execute` 是通用闭环，`fix-loop` 处理评审发现，`review-panel` 做对抗式复核，`coding-protocol` 是底层契约。
+## 12 个技能
 
-### 适合什么场景
+### 01 改动闭环　`需求或缺陷 → 有边界、有验证、有复核的改动`
 
-- 「这个 bug 你改一下，别顺手重构别的。」
-- 「CI 挂了，查一下是什么原因。」
-- 「把这个 PR 的评审意见逐条改掉，别遗漏。」
-- 「多角度审一下这个改动，我怕有坑。」
-- 「给这个新项目建个 AGENTS.md 基线。」
-- 「文档和代码对不上了，同步一下。」
-- 「这个任务派给外部 AI CLI 跑。」
+| 技能 | 职责 | 开箱 |
+|---|---|:-:|
+| `soia-dev-task-execute` | 通用工程任务闭环：定边界、最小改动、验证、独立复核、回执 | ✅ |
+| `soia-dev-coding-protocol` | 为普通代码改动建立最小范围、验证前置、anti-fake-fix 与写后复核契约 | ✅ |
+| `soia-dev-fix-loop` | 五步处理审查或测试发现：复现、决策、修复、回归复核、回执 | ✅ |
+| `soia-dev-review-panel` | 从多视角对 diff 或技能包做对抗式复核，只读不改、不合并、不发布 | ✅ |
 
-### 不负责什么
+### 02 测试与发版　`需求或变更 → 测试计划、发布清单与灰度门`
 
-- 不替你做产品决策。要改什么、为什么改，由你定；技能只保证改得干净、有据可查。
-- 不自动 merge 或发布。评审、合并、发版都需要你明确授权。
-- 不碰生产环境。发版技能产出的是清单与预检门，执行由你来。
-- 不做设计与文档产线，那在 [soia-open-dev-design-skills](https://github.com/soia-team/soia-open-dev-design-skills)。
-- 不包含公司内部流程。保险行业的需求、测试、发版规范在私有仓。
+| 技能 | 职责 | 开箱 |
+|---|---|:-:|
+| `soia-dev-test-draft-doc` | 从需求、PRD 或变更说明生成测试计划、用例与验收对照 | ✅ |
+| `soia-dev-release-plan-checklist` | 生成发布清单、预检门、灰度验证与发布后核对 | ✅ |
 
-## 从哪里开始
+### 03 仓库运维　`仓库现状 → 一致的文档、合规的 PR、可用的基线`
 
-按你手头的事挑入口：
+| 技能 | 职责 | 开箱 |
+|---|---|:-:|
+| `soia-dev-github-ops` | GitHub `gh` CLI 运维、PR 合规审查与修复 | 🟡 |
+| `soia-dev-doc-sync` | 审计并修复 docs、README、CHANGELOG、VERSION 与真源之间的事实漂移 | ✅ |
+| `soia-dev-project-scaffold` | 为新 Git 项目生成最小 AI 协作基线（AGENTS.md + docs 导航） | ✅ |
 
-| 你要做的 | 用这个 | 完成标准 |
-|---|---|---|
-| 改一个 bug 或实现一个功能 | `soia-dev-task-execute` | 边界、最小改动、验证证据、复核、回执五项齐全 |
-| 处理评审或测试发现 | `soia-dev-fix-loop` | 每条发现都有复现、决策、修复、回归四步记录 |
-| 想让人挑毛病 | `soia-dev-review-panel` | 多视角意见，只读不改 |
-| 查 CI / 管 PR / 发 release | `soia-dev-github-ops` | gh CLI 操作有据可查 |
-| 新项目起步 | `soia-dev-project-scaffold` | AGENTS.md 与 docs 导航就位 |
-| 把活派给别的 AI CLI | `soia-dev-agent-cli-dispatch` | 派发有回执、用量可见 |
+### 04 终端与 AI 协作　`长任务与多 AI → 可控的执行与派发`
 
-`soia-dev-coding-protocol` 是底层契约，多数技能会自动叠加它，通常不需要你单独调用。
+| 技能 | 职责 | 开箱 |
+|---|---|:-:|
+| `soia-dev-terminal-ops` | 长任务、tmux 会话、日志抓取、停滞诊断；杀进程走 TERM→复查→KILL 确认门 | ✅ |
+| `soia-dev-agent-cli-dispatch` | 外部 AI CLI 调度与模型路由，受控派活与用量回执 | 🟡 |
+| `soia-dev-agent-md-advisor` | AI 项目指令与配置设计顾问：诊断、起草与改写建议 | ✅ |
 
-## 技能清单
-
-> **开箱可用**：✅ 装完即可使用 · 🟡 还需申请 API key 或完成第三方登录
-
-| 技能 | 一句话职责 | 开箱可用 |
-|---|---|---|
-| `soia-dev-agent-cli-dispatch` | 外部 AI CLI 调度与模型路由，支持受控派活与用量回执。 | 🟡 |
-| `soia-dev-agent-md-advisor` | AI 项目指令与配置设计顾问，提供诊断、起草和改写建议。 | ✅ |
-| `soia-dev-coding-protocol` | 为普通工程代码改动建立最小范围、验证前置、anti-fake-fix 与写后复核契约。 | ✅ |
-| `soia-dev-doc-sync` | 审计并修复文档与代码真源之间的事实漂移。 | ✅ |
-| `soia-dev-fix-loop` | 五步闭环处理评审或测试发现，防止遗漏与假修复。 | ✅ |
-| `soia-dev-github-ops` | GitHub gh CLI 运维、PR 合规审查与修复。 | 🟡 |
-| `soia-dev-project-scaffold` | 为新项目生成最小 AI 协作基线：AGENTS.md 与 docs 导航。 | ✅ |
-| `soia-dev-release-plan-checklist` | 为互联网软件发版生成发布清单、预检门、灰度验证与发布后核对。 | ✅ |
-| `soia-dev-review-panel` | 从多视角对代码 diff 或技能包进行对抗式复核，只读且不编辑、合并或发布。 | ✅ |
-| `soia-dev-task-execute` | 执行任意工程任务的通用闭环：定义边界、实施最小改动、验证、独立复核与回执。 | ✅ |
-| `soia-dev-terminal-ops` | 管理长任务、tmux 会话、日志抓取与停滞诊断。 | ✅ |
-| `soia-dev-test-draft-doc` | 从需求、PRD 或变更说明生成测试计划、测试用例与验收对照。 | ✅ |
-
-## 触发词映射
-
-装完直接用自然语言说话即可，Agent 按下表触发对应技能（完整触发词见各技能 `SKILL.md` 的 `description`）：
-
-| 你说 | 触发技能 |
-|---|---|
-| `派活给外部 AI` / `调用 agy` / `多 CLI 派发` | `soia-dev-agent-cli-dispatch` |
-| `审查我的 AGENTS.md` / `CLAUDE.md 怎么写` / `多个 AI 入口怎么管` | `soia-dev-agent-md-advisor` |
-| `查 CI 挂了` / `发 release` / `加协作者权限` | `soia-dev-github-ops` |
-| `多角度审改动` / `对抗式复核` / `审技能包` | `soia-dev-review-panel` |
+✅ 装完即用　🟡 需先完成登录或申请 API key，技能会在执行前告诉你缺什么
 
 ## 安装
 
-推荐装整个领域插件，一次装好本仓全部技能：
+三个宿主任选，装整个领域插件即 12 个技能一次到位。
 
 ```bash
-claude plugin marketplace add soia-team/soia-open-skills
+claude plugin marketplace add soia-team/soia-open-skills && claude plugin install soia-dev@soia
 ```
 
 ```bash
-claude plugin install soia-dev@soia
+codex plugin marketplace add soia-team/soia-open-skills && codex plugin add soia-dev@soia
 ```
 
-Codex 用户：
+WorkBuddy 是桌面端没有 CLI，由技能代劳——对 AI 说「装到 WorkBuddy」，或直接跑：
 
 ```bash
-codex plugin marketplace add soia-team/soia-open-skills
-codex plugin add soia-dev@soia
+python3 <soia-open-skills>/skills/soia-meta-skill-release/scripts/install_workbuddy_experts.py soia-dev
 ```
 
-只要单个技能时可用 npx 路线。注意技能会落进共享真源 `~/.agents/skills`；
-若同时装了插件，同一技能会出现两份索引且各自漂移，建议二选一：
+装完重启客户端，在【专家中心 → 我的专家】召唤 **Soia · 研发工程师**。
+
+> **常驻成本 ~971 tok**。不用时 `claude plugin disable soia-dev@soia` 降到零，随时开回来。
+> 只想要单个技能可走 npx：`npx skills add soia-team/soia-open-dev-skills -g -a '*' -s <技能名> -y`——与插件二选一，并存会产生双份索引且各自漂移。
+
+## 不负责什么
+
+- **不做假修复**。让测试通过的最短路径若是改断言或加跳过，那不是修复——技能会要求说清真实原因。
+- **不擅自扩大范围**。顺手重构、顺手改格式都要先确认。
+- **不替你做产品决策**。范围取舍与优先级由人拍板。
+- **不碰凭据**。仓里发现明文 key 只报告位置，不代为迁移或删除。
+- **不含公司内部流程**。行业特定的需求、测试、发版规范在私有仓，不开源。
+
+## 贡献
+
+改动技能后提交前跑：
 
 ```bash
-npx skills add soia-team/soia-open-dev-skills -g -a '*' -s <技能名> -y
+python3 -m unittest discover -s tests -p 'test_*.py' && python3 scripts/audit_skills.py --strict && python3 scripts/generate_expert_manifest.py --check
 ```
 
-## 验证与贡献
-
-改动技能后，提交前跑：
-
-```bash
-python3 -m unittest discover -s tests -p 'test_*.py'
-python3 scripts/generate_skill_catalog.py --check
-python3 scripts/audit_skills.py --strict
-```
-
-贡献流程、技能契约与发布步骤见元仓
-[CONTRIBUTING.md](https://github.com/soia-team/soia-open-skills/blob/main/CONTRIBUTING.md)。
-
-## 生态导航
-
-规范真源、全生态技能目录与安装指南见 [soia-team/soia-open-skills](https://github.com/soia-team/soia-open-skills)。
-维护本仓技能的完整流程见 [CONTRIBUTING.md](https://github.com/soia-team/soia-open-skills/blob/main/CONTRIBUTING.md)。
+完整流程见门户仓 [CONTRIBUTING.md](https://github.com/soia-team/soia-open-skills/blob/main/CONTRIBUTING.md)。
 
 ## License
 
-MIT License — see [LICENSE](./LICENSE).
+MIT —— 见 [LICENSE](./LICENSE)。
