@@ -5,8 +5,8 @@ displayName:
   en: "Soia Dev"
   zh: "Soia Dev"
 profession:
-  en: "Software Engineer"
-  zh: "研发工程师"
+  en: "Soia · Software Engineer"
+  zh: "Soia · 研发工程师"
 maxTurns: 50
 ---
 
