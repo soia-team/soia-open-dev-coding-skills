@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/hero.webp" width="640" alt="">
+<img src="assets/icon.png" width="88" alt="">
 
 # SOIA Open Dev Skills
 
@@ -34,33 +34,33 @@ flowchart LR
 
 | Skill | Responsibility | Ready |
 |---|---|:-:|
-| `soia-dev-task-execute` | General engineering loop: define boundary, minimal change, verify, independent review, receipt | ✅ |
-| `soia-dev-coding-protocol` | Establishes minimal-scope, verify-first, anti-fake-fix and post-write review contracts | ✅ |
-| `soia-dev-fix-loop` | Five steps for review or test findings: reproduce, decide, fix, regress, receipt | ✅ |
-| `soia-dev-review-panel` | Adversarial multi-lens review of a diff or skill package — read-only, never edits, merges or publishes | ✅ |
+| [`soia-dev-task-execute`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-task-execute.md) | General engineering loop: define boundary, minimal change, verify, independent review, receipt | ✅ |
+| [`soia-dev-coding-protocol`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-coding-protocol.md) | Establishes minimal-scope, verify-first, anti-fake-fix and post-write review contracts | ✅ |
+| [`soia-dev-fix-loop`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-fix-loop.md) | Five steps for review or test findings: reproduce, decide, fix, regress, receipt | ✅ |
+| [`soia-dev-review-panel`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-review-panel.md) | Adversarial multi-lens review of a diff or skill package — read-only, never edits, merges or publishes | ✅ |
 
 ### 02 Testing and release　`Requirement or change → test plan, release checklist, rollout gates`
 
 | Skill | Responsibility | Ready |
 |---|---|:-:|
-| `soia-dev-test-draft-doc` | Generates test plans, cases and an acceptance matrix from requirements, PRDs or change notes | ✅ |
-| `soia-dev-release-plan-checklist` | Generates the release checklist, pre-flight gates, canary verification and post-release checks | ✅ |
+| [`soia-dev-test-draft-doc`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-test-draft-doc.md) | Generates test plans, cases and an acceptance matrix from requirements, PRDs or change notes | ✅ |
+| [`soia-dev-release-plan-checklist`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-release-plan-checklist.md) | Generates the release checklist, pre-flight gates, canary verification and post-release checks | ✅ |
 
 ### 03 Repository operations　`Repo as-is → consistent docs, compliant PRs, a working baseline`
 
 | Skill | Responsibility | Ready |
 |---|---|:-:|
-| `soia-dev-github-ops` | GitHub `gh` CLI operations, PR compliance review and remediation | 🟡 |
-| `soia-dev-doc-sync` | Audits and repairs factual drift between docs, README, CHANGELOG, VERSION and the source of truth | ✅ |
-| `soia-dev-project-scaffold` | Generates a minimal AI-collaboration baseline for a new Git project (AGENTS.md + docs nav) | ✅ |
+| [`soia-dev-github-ops`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-github-ops.md) | GitHub `gh` CLI operations, PR compliance review and remediation | 🟡 |
+| [`soia-dev-doc-sync`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-doc-sync.md) | Audits and repairs factual drift between docs, README, CHANGELOG, VERSION and the source of truth | ✅ |
+| [`soia-dev-project-scaffold`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-project-scaffold.md) | Generates a minimal AI-collaboration baseline for a new Git project (AGENTS.md + docs nav) | ✅ |
 
 ### 04 Terminal and multi-agent　`Long tasks and several CLIs → controlled execution and dispatch`
 
 | Skill | Responsibility | Ready |
 |---|---|:-:|
-| `soia-dev-terminal-ops` | Long tasks, tmux sessions, log capture, stall diagnosis; killing goes through TERM → recheck → KILL | ✅ |
-| `soia-dev-agent-cli-dispatch` | External AI CLI dispatch and model routing, with controlled hand-off and usage receipts | 🟡 |
-| `soia-dev-agent-md-advisor` | Advisor for AI project instructions and config: diagnosis, drafting and rewriting | ✅ |
+| [`soia-dev-terminal-ops`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-terminal-ops.md) | Long tasks, tmux sessions, log capture, stall diagnosis; killing goes through TERM → recheck → KILL | ✅ |
+| [`soia-dev-agent-cli-dispatch`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-agent-cli-dispatch.md) | External AI CLI dispatch and model routing, with controlled hand-off and usage receipts | 🟡 |
+| [`soia-dev-agent-md-advisor`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-agent-md-advisor.md) | Advisor for AI project instructions and config: diagnosis, drafting and rewriting | ✅ |
 
 ✅ Works right after install　🟡 Needs a login or API key first; the skill tells you what is missing before it runs
 

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/hero.webp" width="640" alt="">
+<img src="assets/icon.png" width="88" alt="">
 
 # SOIA Open Dev Skills
 
@@ -34,33 +34,33 @@ flowchart LR
 
 | 技能 | 职责 | 开箱 |
 |---|---|:-:|
-| `soia-dev-task-execute` | 通用工程任务闭环：定边界、最小改动、验证、独立复核、回执 | ✅ |
-| `soia-dev-coding-protocol` | 为普通代码改动建立最小范围、验证前置、anti-fake-fix 与写后复核契约 | ✅ |
-| `soia-dev-fix-loop` | 五步处理审查或测试发现：复现、决策、修复、回归复核、回执 | ✅ |
-| `soia-dev-review-panel` | 从多视角对 diff 或技能包做对抗式复核，只读不改、不合并、不发布 | ✅ |
+| [`soia-dev-task-execute`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-task-execute.md) | 通用工程任务闭环：定边界、最小改动、验证、独立复核、回执 | ✅ |
+| [`soia-dev-coding-protocol`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-coding-protocol.md) | 为普通代码改动建立最小范围、验证前置、anti-fake-fix 与写后复核契约 | ✅ |
+| [`soia-dev-fix-loop`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-fix-loop.md) | 五步处理审查或测试发现：复现、决策、修复、回归复核、回执 | ✅ |
+| [`soia-dev-review-panel`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-review-panel.md) | 从多视角对 diff 或技能包做对抗式复核，只读不改、不合并、不发布 | ✅ |
 
 ### 02 测试与发版　`需求或变更 → 测试计划、发布清单与灰度门`
 
 | 技能 | 职责 | 开箱 |
 |---|---|:-:|
-| `soia-dev-test-draft-doc` | 从需求、PRD 或变更说明生成测试计划、用例与验收对照 | ✅ |
-| `soia-dev-release-plan-checklist` | 生成发布清单、预检门、灰度验证与发布后核对 | ✅ |
+| [`soia-dev-test-draft-doc`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-test-draft-doc.md) | 从需求、PRD 或变更说明生成测试计划、用例与验收对照 | ✅ |
+| [`soia-dev-release-plan-checklist`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-release-plan-checklist.md) | 生成发布清单、预检门、灰度验证与发布后核对 | ✅ |
 
 ### 03 仓库运维　`仓库现状 → 一致的文档、合规的 PR、可用的基线`
 
 | 技能 | 职责 | 开箱 |
 |---|---|:-:|
-| `soia-dev-github-ops` | GitHub `gh` CLI 运维、PR 合规审查与修复 | 🟡 |
-| `soia-dev-doc-sync` | 审计并修复 docs、README、CHANGELOG、VERSION 与真源之间的事实漂移 | ✅ |
-| `soia-dev-project-scaffold` | 为新 Git 项目生成最小 AI 协作基线（AGENTS.md + docs 导航） | ✅ |
+| [`soia-dev-github-ops`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-github-ops.md) | GitHub `gh` CLI 运维、PR 合规审查与修复 | 🟡 |
+| [`soia-dev-doc-sync`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-doc-sync.md) | 审计并修复 docs、README、CHANGELOG、VERSION 与真源之间的事实漂移 | ✅ |
+| [`soia-dev-project-scaffold`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-project-scaffold.md) | 为新 Git 项目生成最小 AI 协作基线（AGENTS.md + docs 导航） | ✅ |
 
 ### 04 终端与 AI 协作　`长任务与多 AI → 可控的执行与派发`
 
 | 技能 | 职责 | 开箱 |
 |---|---|:-:|
-| `soia-dev-terminal-ops` | 长任务、tmux 会话、日志抓取、停滞诊断；杀进程走 TERM→复查→KILL 确认门 | ✅ |
-| `soia-dev-agent-cli-dispatch` | 外部 AI CLI 调度与模型路由，受控派活与用量回执 | 🟡 |
-| `soia-dev-agent-md-advisor` | AI 项目指令与配置设计顾问：诊断、起草与改写建议 | ✅ |
+| [`soia-dev-terminal-ops`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-terminal-ops.md) | 长任务、tmux 会话、日志抓取、停滞诊断；杀进程走 TERM→复查→KILL 确认门 | ✅ |
+| [`soia-dev-agent-cli-dispatch`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-agent-cli-dispatch.md) | 外部 AI CLI 调度与模型路由，受控派活与用量回执 | 🟡 |
+| [`soia-dev-agent-md-advisor`](https://github.com/soia-team/soia-open-skills/blob/main/docs/skills/soia-dev-agent-md-advisor.md) | AI 项目指令与配置设计顾问：诊断、起草与改写建议 | ✅ |
 
 ✅ 装完即用　🟡 需先完成登录或申请 API key，技能会在执行前告诉你缺什么
 
