@@ -3,7 +3,7 @@ name: soia-dev-terminal-ops
 description: 管理 POSIX/macOS/Linux 上的长任务、tmux 后台会话、日志抓取、停滞诊断与安全恢复；在终止进程前用日志、CPU、网络等多信号交叉判断，并执行 TERM→复查→KILL 确认门。
 version: 1.1.1
 created_at: 2026-07-07 14:44:10
-updated_at: 2026-07-23 00:00:00
+updated_at: 2026-07-27 15:43:29
 created_by: claude opus 4.6
 updated_by: codex gpt-5
 ---

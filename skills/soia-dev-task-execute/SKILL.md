@@ -2,7 +2,7 @@
 name: soia-dev-task-execute
 description: 执行任意工程任务的通用闭环：定义边界、实施最小改动、验证、独立复核与回执。适用于代码、配置、文档和维护任务。
 version: 1.0.1
-created_at: 2026-07-20 00:00:00
+created_at: 2026-07-22 21:25:39
 updated_at: 2026-07-22 21:13:22
 created_by: gpt-5.6-terra
 updated_by: gpt-5.6-luna
