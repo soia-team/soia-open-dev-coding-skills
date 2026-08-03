@@ -149,7 +149,7 @@ def run_selftest() -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--executor", choices=["codex", "claude", "agy", "gemini", "kimi", "opencode", "qwen"])
+    parser.add_argument("--executor", choices=["codex", "claude", "agy", "gemini", "kimi", "opencode", "qwen", "pi"])
     parser.add_argument("--complexity", choices=["easy", "medium", "hard"])
     parser.add_argument("--model")
     parser.add_argument("--reasoning")
