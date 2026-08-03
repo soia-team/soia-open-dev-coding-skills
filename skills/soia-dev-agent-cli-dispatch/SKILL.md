@@ -3,11 +3,11 @@ name: soia-dev-agent-cli-dispatch
 description: 外部 AI CLI 调度与模型路由，支持受控派活与用量回执。触发：「派活给外部 AI」「调用 agy」「多 CLI 派发」
 dependencies:
   optional: [soia-meta-sync-skills]
-version: 1.1.3
+version: 1.2.0
 created_at: 2026-07-10 11:28:32
-updated_at: 2026-07-29 22:30:00
+updated_at: 2026-08-03 14:30:00
 created_by: claude opus 4.6
-updated_by: claude-opus-5
+updated_by: gpt-5.6-luna
 ---
 
 # soia-dev-agent-cli-dispatch
@@ -27,7 +27,7 @@ command with no orchestration, monitoring, or prompt-injection concerns.
 
 ### 这个技能可以做什么
 
-调度外部 AI 模型/CLI（codex/claude/agy/gemini/kimi/opencode/qwen，非宿主内置子代理，`qodercli` 也有命令模板但未纳入下方精简清单）进行受控派发，覆盖编码、审查、分析、研究、文档和内容任务：任务边界拆分、独立 workdir、防注入 prompt 写法、模型分级矩阵、Worktree 审批门、Anti-Fake-Fix 三步验证。在此之上，可显式指定执行器 + 模型 + 推理深度，或只给执行器家族由任务难度自动选型（见「自动路由」）；每次调用后输出 Token/费用汇总（见「调用总结回执」）、模型完整性检测（见「Model Integrity Gate」）、额度预检（见「额度预检」）与断点续跑（见「可恢复执行」）。各执行器详细命令模板在 `references/` 子目录下按需加载。
+调度外部 AI 模型/CLI（codex/claude/agy/gemini/kimi/opencode/qwen/pi，非宿主内置子代理，`qodercli` 也有命令模板但未纳入下方精简清单）进行受控派发，覆盖编码、审查、分析、研究、文档和内容任务：任务边界拆分、独立 workdir、防注入 prompt 写法、模型分级矩阵、Worktree 审批门、Anti-Fake-Fix 三步验证。在此之上，可显式指定执行器 + 模型 + 推理深度，或只给执行器家族由任务难度自动选型（见「自动路由」）；每次调用后输出 Token/费用汇总（见「调用总结回执」）、模型完整性检测（见「Model Integrity Gate」）、额度预检（见「额度预检」）与断点续跑（见「可恢复执行」）。各执行器详细命令模板在 `references/` 子目录下按需加载。
 
 | 客户想要 | 技能会做 | 客户能看到 |
 |---|---|---|
@@ -178,6 +178,10 @@ Standard/Enterprise、Gemini API Key 和 Vertex AI 通道仍保留在 `gemini`
 │   └── opencode run "..."  或  cd <wt> && kimi -m kimi-k2.6 -y -p "..."
 │       详见 references/opencode-qwen.md / references/kimi-cli.md / references/qodercli.md
 │
+├── 经济型编码 / 轻分析（DeepSeek 系按量计费）
+│   └── pi -p "..."（非交互必须 -p，否则进 TUI 挂起；详见 references/pi.md）
+│       详见 references/pi.md
+│
 ├── 文档/内容写作
 │   ├── 消费者 Google 账号：agy -p "..."（需先确认额度；显式派发）
 │   ├── Gemini 企业/API Key/Vertex：gemini -p "..."
@@ -240,6 +244,7 @@ Standard/Enterprise、Gemini API Key 和 Vertex AI 通道仍保留在 `gemini`
 | 简单任务 | qodercli | `--yolo` 或 `--model auto` | `references/qodercli.md` |
 | 中等任务 | opencode / kimi | `run` / `kimi-k2.6 --thinking --print` | `references/opencode-qwen.md` / `references/kimi-cli.md` |
 | 中等任务 | qodercli | `--dangerously-skip-permissions` | `references/qodercli.md` |
+| 经济型编码 / 轻分析 | pi | `pi -p`（非交互必须加 `-p`） | `references/pi.md` |
 | 中等复杂度编码 / 快速迭代 | kimi | `--thinking` | `references/kimi-cli.md` |
 | Antigravity 消费者账号 | agy | 显式派发；当前不自动选模 | `references/antigravity-cli.md` |
 | 文档/内容 | agy（消费者）/ gemini（非消费者）/ qwen | agy 显式运行时显示名 / `gemini -p --yolo` / `qwen-max` | `references/antigravity-cli.md` / `references/gemini-cli.md` / `references/opencode-qwen.md` |
@@ -481,6 +486,7 @@ python3 scripts/run_claude_prompt.py \
 | Gemini CLI 执行规范 | `references/gemini-cli.md` | 派发给 gemini 时 |
 | Kimi CLI 执行规范 | `references/kimi-cli.md` | 派发给 kimi 时 |
 | qodercli 执行规范 | `references/qodercli.md` | 派发给 qodercli 时 |
+| Pi (pi-coding-agent) 执行规范 | `references/pi.md` | 派发给 pi 时 |
 | OpenCode + Qwen 执行规范 | `references/opencode-qwen.md` | 派发给 opencode/qwen 时 |
 | 代码文件元数据头规范 | `references/metadata-header.md` | 任何代码写入前 |
 | 模型价格资料原文（2026-07-10 快照） | `references/model-pricing-2026-07-10.md` | 需要人工核对官方定价、或价格资料更新时 |

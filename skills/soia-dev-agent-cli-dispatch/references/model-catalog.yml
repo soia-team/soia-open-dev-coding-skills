@@ -769,7 +769,7 @@ providers:
         discovered_at: null
         discovery_evidence: null
   deepseek:
-    executor_cli: null
+    executor_cli: pi
     models:
       - model_id: deepseek-v4-flash
         display_name: "DeepSeek V4 Flash"

@@ -118,6 +118,7 @@ VERSION_COMMANDS = {
     "kimi": ["kimi", "--version"],
     "opencode": ["opencode", "--version"],
     "qwen": ["qwen", "--version"],
+    "pi": ["pi", "--version"],
 }
 
 DEFAULT_TIMEOUT_SECONDS = 600
