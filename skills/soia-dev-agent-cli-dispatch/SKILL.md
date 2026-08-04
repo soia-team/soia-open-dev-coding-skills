@@ -3,9 +3,9 @@ name: soia-dev-agent-cli-dispatch
 description: 外部 AI CLI 调度与模型路由，支持受控派活与用量回执。触发：「派活给外部 AI」「调用 agy」「多 CLI 派发」
 dependencies:
   optional: [soia-meta-sync-skills]
-version: 1.2.1
+version: 1.2.2
 created_at: 2026-07-10 11:28:32
-updated_at: 2026-08-04 11:13:15
+updated_at: 2026-08-04 11:43:03
 created_by: claude opus 4.6
 updated_by: gpt-5.6-sol
 ---
@@ -14,7 +14,7 @@ updated_by: gpt-5.6-sol
 
 Use this skill when any host AI needs to dispatch coding, review, analysis,
 research, documentation, or content work to an external AI model/CLI — Codex,
-Antigravity CLI, Gemini CLI, Kimi CLI, OpenCode, Qwen Code, or a
+Pi, Antigravity CLI, Gemini CLI, Kimi CLI, OpenCode, Qwen Code, qodercli, or a
 separately-launched Claude Code process — instead of continuing directly in the
 current agent session. This is about calling an external AI process; it is
 **not** about a host's built-in sub-agents.
@@ -76,8 +76,8 @@ python3 ~/.agents/skills/soia-meta-sync-skills/scripts/sync_soia_skills.py \
 SOIA_DEV_AGENT_CLI_DISPATCH_CONFIG_FILE=<custom-config-path>
 ```
 
-- 如果本技能不需要私有配置，可以不创建 `config.yml`。
-- 如果需要 API key、cookie、session、provider home 或本机路径，只能放进私有 `config.yml`、进程环境或 provider 自己的登录态里，不能写进仓库、vault 正文或日志。
+- 本技能默认不需要创建 `config.yml`：执行器的认证、套餐和 provider 登录态由各 CLI 自己管理；不要把它们复制到本技能配置。
+- 如果编排层需要 API key、cookie、session、provider home 或本机路径，只能放进私有 `config.yml`、进程环境或 provider 自己的登录态里，不能写进仓库、vault 正文或日志。
 - 第三方 skill 只能声明依赖和安装方式，不直接修改第三方 skill 文件。
 - 本技能不硬绑定任何具体编排系统；文中出现的“你的编排层”指调用本技能的上层 Agent/系统，不是某个特定产品。
 
@@ -338,7 +338,8 @@ pi -p --mode json --no-session \
 | `scripts/catalog_lib.py` | 受限 YAML 子集解析器 + `model-catalog.yml` schema 校验（重复 model_id / 缺字段 / 负价拒绝，未知 reasoning level 标记为 WARN） | `python3 scripts/catalog_lib.py --selftest` |
 | `scripts/estimate_cost.py` | 给定 model + token 数，输出 API 等价费用估算（分项 + 总额 + `confidence`），未知模型给出近似候选并以 exit code 2 退出 | `python3 scripts/estimate_cost.py --selftest` |
 | `scripts/run_matrix.py` | 可恢复的串行派发矩阵执行器；支持 Codex、Claude 与 Pi 的模型完整性证据，其中 Pi 解析 `--mode json` JSONL | `python3 scripts/run_matrix.py --selftest` |
+| `scripts/validate_executor_capabilities.py` | 校验执行器能力 YAML 的字段、执行器清单和 reference 路径，防止支持矩阵漂移 | `python3 scripts/validate_executor_capabilities.py --selftest` |
 | `scripts/route_model.py` | 从已验证 catalog 记录机械选择模型/推理档并输出固定路由回执；显式指定优先 | `python3 scripts/route_model.py --selftest` |
 | `scripts/run_claude_prompt.py` | 从 UTF-8 prompt 文件经 stdin 调用 Claude Code，防 YAML `---` 被误判为选项，并保留结构化 stdout | `python3 scripts/run_claude_prompt.py --selftest` |
 
-所有脚本均为纯 Python 标准库实现，无第三方依赖。修改任意一个后，先跑对应 `--selftest`，再跑其余脚本的自检，确认没有连带破坏（`estimate_cost.py` 和 `run_matrix.py` 都从 `catalog_lib.py` 导入解析/校验逻辑）。
+所有脚本均为纯 Python 标准库实现，无第三方依赖。修改任意一个后，先跑对应 `--selftest`，再跑其余脚本的自检，确认没有连带破坏（`estimate_cost.py`、`run_matrix.py` 和 `validate_executor_capabilities.py` 都从 `catalog_lib.py` 导入受限 YAML 解析/校验逻辑）。
