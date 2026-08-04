@@ -1,14 +1,14 @@
 # Public machine-readable AI-agent support and usage registry for soia-dev-agent-cli-dispatch.
 # This is not a credential file. Keep mutable support facts here; prose should link here instead of copying the matrix.
 schema_version: 1
-config_template: config.example.yml
+config_template: assets/config.example.yml
 updated_at: "2026-08-04"
 skill:
   name: soia-dev-agent-cli-dispatch
   display_name: "Dev Agent CLI Dispatch"
-  version: "1.3.0"
+  version: "1.3.1"
   purpose: "将编码、审查、分析、研究、文档和内容任务派发给外部 AI CLI，并回传模型、用量与成本证据。"
-  triggers: [派活给外部 AI, 调用 agy, 多 CLI 派发]
+  triggers: [派活给外部 AI, 调用 DeepCode/Pi/agy, 多 CLI 派发]
 usage:
   prerequisites: [目标工作目录, 已安装的目标 CLI, provider 自己的登录态]
   auto_route:
@@ -68,7 +68,7 @@ agents:
     model_integrity: verified
     usage_evidence: partial
     auto_routing: [easy, medium, hard]
-    reference: references/codex.md
+    reference: references/codex-cli.md
   claude:
     command: claude
     dispatch_supported: true
@@ -79,7 +79,7 @@ agents:
     model_integrity: verified
     usage_evidence: measured
     auto_routing: [easy, medium]
-    reference: references/claude-code.md
+    reference: references/claude-code-cli.md
   pi:
     command: pi
     dispatch_supported: true
@@ -90,7 +90,7 @@ agents:
     model_integrity: verified
     usage_evidence: measured
     auto_routing: [easy]
-    reference: references/pi.md
+    reference: references/pi-cli.md
   agy:
     command: agy
     dispatch_supported: true
@@ -134,7 +134,7 @@ agents:
     model_integrity: unimplemented
     usage_evidence: unavailable
     auto_routing: []
-    reference: references/opencode-qwen.md
+    reference: references/opencode-qwen-cli.md
   qwen:
     command: qwen
     dispatch_supported: true
@@ -145,7 +145,7 @@ agents:
     model_integrity: unimplemented
     usage_evidence: unavailable
     auto_routing: []
-    reference: references/opencode-qwen.md
+    reference: references/opencode-qwen-cli.md
   qodercli:
     command: qodercli
     dispatch_supported: true
@@ -156,7 +156,7 @@ agents:
     model_integrity: unimplemented
     usage_evidence: unavailable
     auto_routing: []
-    reference: references/qodercli.md
+    reference: references/qoder-cli.md
   deepcode:
     command: deepcode
     dispatch_supported: true
@@ -167,5 +167,5 @@ agents:
     model_integrity: unimplemented
     usage_evidence: unavailable
     auto_routing: []
-    reference: references/deepcode.md
+    reference: references/deepcode-cli.md
     provider_config: "~/.deepcode/settings.json"

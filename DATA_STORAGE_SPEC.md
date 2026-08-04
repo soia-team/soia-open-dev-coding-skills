@@ -1,5 +1,7 @@
 # Private Data and Intermediate Storage Spec
 
+`storage-schema: v2`（自 2026-07-22 起）
+
 This repository publishes public, advanced skills across domains (PKM, dev
 tooling, collaboration, design). Skills here read and write customer data on
 local disk and cloud providers, but must not turn the public repository, a
@@ -41,6 +43,25 @@ SOIA_SKILLS_CACHE_HOME
 ```
 
 These variables name directories, not secret values.
+
+### v1 兼容回退
+
+读取时按 v2 → v1 的顺序查找。v1 路径形如
+`soia-skills/<repo>/<domain>/<skill-name>/`；本仓兼容历史仓名
+`soia-open-dev-coding-skills` 与旧 domain 写法。v1 仅用于只读回退；所有新写入
+始终落到 v2 路径。命中 v1 时，解析器只输出迁移提示，不自动移动或删除数据。
+移除 v1 回退属于破坏性迁移，必须先盘点实际命中量、提供迁移命令并获得客户确认。
+
+## Repository templates versus private config
+
+- A committed `assets/config.example.yml` is a public template with placeholders;
+  it is not a runtime config and must never contain customer values.
+- The runtime config is the customer-owned v2 file under
+  `~/.config/soia-skills/<skill-name>/config.yml`, or an explicit
+  `SOIA_<TYPE>_<SHORT>_CONFIG_FILE` override.
+- Machine-readable provider/capability registries belong in `references/` and
+  may be committed only when they contain public facts, not user settings.
+- The repository checkout is never searched for private runtime config.
 
 ## Credentials and private information
 

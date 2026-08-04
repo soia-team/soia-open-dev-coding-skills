@@ -478,7 +478,7 @@ providers:
           output_per_1m: 15
 sources:
   - id: pricing-2026-07-10
-    path: references/model-pricing-2026-07-10.md
+    path: reports/model-pricing-2026-07-10.md
     date: "2026-07-10"
 """
     parsed = parse_yaml_subset(sample)

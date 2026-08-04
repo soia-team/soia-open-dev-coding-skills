@@ -1,6 +1,6 @@
 # 执行器派发与推荐组合（按需加载）
 
-本文件承载执行器派发决策树、快速查表、推荐组合与自动路由运行机制。主 `SKILL.md` 只保留路由摘要；每次派发时先核对 `../supported-agents.yml` 的实际支持状态，再决定执行器。
+本文件承载执行器派发决策树、快速查表、推荐组合与自动路由运行机制。主 `SKILL.md` 只保留路由摘要；每次派发时先核对 `supported-agents.yml` 的实际支持状态，再决定执行器。
 
 ## 执行器派发决策树
 
@@ -10,25 +10,25 @@
 任务类型判断
 ├── 简单且非破坏性任务（写配置/简单脚本；删除、覆盖等破坏性动作不得归入此类）
 │   └── opencode run "..."  或  cd <wt> && kimi --plan -p "..."（kimi ≥0.28 已移除 -w/--print，见 references/kimi-cli.md）
-│       详见 references/opencode-qwen.md / references/kimi-cli.md / references/qodercli.md
+│       详见 references/opencode-qwen-cli.md / references/kimi-cli.md / references/qoder-cli.md
 │
 ├── 中等任务（rsync/build/verify/小范围重构）
 │   └── opencode run "..."  或  cd <wt> && kimi -m kimi-k2.6 -y -p "..."
-│       详见 references/opencode-qwen.md / references/kimi-cli.md / references/qodercli.md
+│       详见 references/opencode-qwen-cli.md / references/kimi-cli.md / references/qoder-cli.md
 │
 ├── 经济型编码 / 轻分析（DeepSeek 系按量计费）
-│   └── pi -p "..."（非交互必须 -p，否则进 TUI 挂起；详见 references/pi.md）
-│       详见 references/pi.md
+│   └── pi -p "..."（非交互必须 -p，否则进 TUI 挂起；详见 references/pi-cli.md）
+│       详见 references/pi-cli.md
 │
 ├── DeepSeek 生态显式派发（DeepCode）
 │   └── cd <wt> && deepcode -p "$(< "$PROMPT_FILE")"
-│       详见 references/deepcode.md；当前仅命令模板验证，不自动路由
+│       详见 references/deepcode-cli.md；当前仅命令模板验证，不自动路由
 │
 ├── 文档/内容写作
 │   ├── 消费者 Google 账号：agy -p "..."（需先确认额度；显式派发）
 │   ├── Gemini 企业/API Key/Vertex：gemini -p "..."
 │   └── qwen "..." / qwen -m qwen-max "..."
-│       详见 references/antigravity-cli.md / references/gemini-cli.md / references/opencode-qwen.md
+│       详见 references/antigravity-cli.md / references/gemini-cli.md / references/opencode-qwen-cli.md
 │
 ├── 中等复杂度编码 / 快速迭代
 │   └── cd <wt> && kimi -m kimi-k2.6 -y --skills-dir <your-skills-dir> -p "..."
@@ -36,37 +36,37 @@
 │
 ├── 复杂代码编辑（常见默认候选）
 │   └── codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check
-│       详见 references/codex.md
+│       详见 references/codex-cli.md
 │
 ├── 代码审核 / diff review / evidence 验证
 │   └── codex exec ...
-│       详见 references/codex.md
+│       详见 references/codex-cli.md
 │
 ├── 新增/难任务/高风险变更
 │   └── codex exec -m <model> -c model_reasoning_effort="high" ...
-│       详见 references/codex.md
+│       详见 references/codex-cli.md
 │
 ├── 调度 / 代码审查 / 计划拆分 / 复杂推理
 │   └── Claude Code — 高阶推理档（thinking=high）
 │       适用：派发子 agent / 审 PR / 规划提案 / 复杂 bug 定位
-│       详见 references/claude-code.md
+│       详见 references/claude-code-cli.md
 │
 ├── 代码编写 / 中等任务（高阶档节流替代）
 │   └── Claude Code — 中阶档
 │       适用：UI 编辑 / 文档改写 / 中型重构
-│       详见 references/claude-code.md
+│       详见 references/claude-code-cli.md
 │
 ├── 轻量 Edit / Read / Grep（超轻量）
 │   └── Claude Code — 轻量档
 │       适用：一次性小改 / 快速查阅
-│       详见 references/claude-code.md
+│       详见 references/claude-code-cli.md
 │
 ├── 大上下文分析 / 结构化输出
 │   ├── 消费者 Google 账号：agy --model "<agy models 显示名>" -p "..."
 │   ├── Gemini 非消费者通道：gemini -p "..." --output-format json
 │   ├── Gemini 非消费者通道：gemini -p "..." --output-format stream-json
 │   └── claude --permission-mode bypassPermissions --print --output-format json
-│       详见 references/antigravity-cli.md / references/gemini-cli.md / references/claude-code.md
+│       详见 references/antigravity-cli.md / references/gemini-cli.md / references/claude-code-cli.md
 │
 ├── 高隔离分析（沙箱）
 │   ├── 消费者 Google 账号：agy --sandbox --mode plan -p "..."
@@ -75,38 +75,38 @@
 │
 └── Qwen 生态编码/评审
     └── qwen / qwen -i / qwen -m qwen-max
-        详见 references/opencode-qwen.md
+        详见 references/opencode-qwen-cli.md
 ```
 
 ## 派发矩阵（快速查表）
 
 | 场景 | 执行器 | 模式 | 详细规则 |
 |------|-------|------|---------|
-| 简单任务 | opencode / kimi | `run` / `--plan` 确认后 `--print` | `references/opencode-qwen.md` / `references/kimi-cli.md` |
-| 简单任务 | qodercli | `--yolo` 或 `--model auto` | `references/qodercli.md` |
-| 中等任务 | opencode / kimi | `run` / `kimi-k2.6 --thinking --print` | `references/opencode-qwen.md` / `references/kimi-cli.md` |
-| 中等任务 | qodercli | `--dangerously-skip-permissions` | `references/qodercli.md` |
-| 经济型编码 / 轻分析 | pi | `pi -p`（非交互必须加 `-p`） | `references/pi.md` |
-| DeepSeek 生态显式派发 | deepcode | `deepcode -p` | `references/deepcode.md`（无结构化模型/usage 证据，不自动路由） |
+| 简单任务 | opencode / kimi | `run` / `--plan` 确认后 `--print` | `references/opencode-qwen-cli.md` / `references/kimi-cli.md` |
+| 简单任务 | qodercli | `--yolo` 或 `--model auto` | `references/qoder-cli.md` |
+| 中等任务 | opencode / kimi | `run` / `kimi-k2.6 --thinking --print` | `references/opencode-qwen-cli.md` / `references/kimi-cli.md` |
+| 中等任务 | qodercli | `--dangerously-skip-permissions` | `references/qoder-cli.md` |
+| 经济型编码 / 轻分析 | pi | `pi -p`（非交互必须加 `-p`） | `references/pi-cli.md` |
+| DeepSeek 生态显式派发 | deepcode | `deepcode -p` | `references/deepcode-cli.md`（无结构化模型/usage 证据，不自动路由） |
 | 中等复杂度编码 / 快速迭代 | kimi | `--thinking` | `references/kimi-cli.md` |
 | Antigravity 消费者账号 | agy | 显式派发；当前不自动选模 | `references/antigravity-cli.md` |
-| 文档/内容 | agy（消费者）/ gemini（非消费者）/ qwen | agy 显式运行时显示名 / `gemini -p --yolo` / `qwen-max` | `references/antigravity-cli.md` / `references/gemini-cli.md` / `references/opencode-qwen.md` |
-| 复杂代码（常见默认） | codex | high reasoning | `references/codex.md` |
-| 代码审核 | codex | high reasoning | `references/codex.md` |
-| 新增/高风险 | codex | high reasoning | `references/codex.md` |
-| 调度 / 审查 / 规划 / 复杂推理 | Claude Code | 高阶推理档（thinking=high） | `references/claude-code.md` |
-| 代码编写 / 中等任务 | Claude Code | 中阶档 | `references/claude-code.md` |
-| 轻量 Edit / Read / Grep | Claude Code | 轻量档 | `references/claude-code.md` |
-| 大上下文分析 | agy（消费者）/ gemini（非消费者）/ claude | agy 显式派发 / Gemini JSON 或 stream-json | `references/antigravity-cli.md` / `references/gemini-cli.md` / `references/claude-code.md` |
+| 文档/内容 | agy（消费者）/ gemini（非消费者）/ qwen | agy 显式运行时显示名 / `gemini -p --yolo` / `qwen-max` | `references/antigravity-cli.md` / `references/gemini-cli.md` / `references/opencode-qwen-cli.md` |
+| 复杂代码（常见默认） | codex | high reasoning | `references/codex-cli.md` |
+| 代码审核 | codex | high reasoning | `references/codex-cli.md` |
+| 新增/高风险 | codex | high reasoning | `references/codex-cli.md` |
+| 调度 / 审查 / 规划 / 复杂推理 | Claude Code | 高阶推理档（thinking=high） | `references/claude-code-cli.md` |
+| 代码编写 / 中等任务 | Claude Code | 中阶档 | `references/claude-code-cli.md` |
+| 轻量 Edit / Read / Grep | Claude Code | 轻量档 | `references/claude-code-cli.md` |
+| 大上下文分析 | agy（消费者）/ gemini（非消费者）/ claude | agy 显式派发 / Gemini JSON 或 stream-json | `references/antigravity-cli.md` / `references/gemini-cli.md` / `references/claude-code-cli.md` |
 | 高隔离沙箱 | agy（消费者）/ gemini（非消费者） | `agy --sandbox --mode plan -p` / `gemini --sandbox -y -p` | `references/antigravity-cli.md` / `references/gemini-cli.md` |
-| headless agent | opencode | `run` / `serve` | `references/opencode-qwen.md` |
-| Qwen 栈 | qwen | `qwen` / `qwen -i` | `references/opencode-qwen.md` |
+| headless agent | opencode | `run` / `serve` | `references/opencode-qwen-cli.md` |
+| Qwen 栈 | qwen | `qwen` / `qwen -i` | `references/opencode-qwen-cli.md` |
 
 **排除**：`Ollama` 不是编码代理执行器，属于本地模型运行时 / OpenAI-compatible provider，应放在你自己的 provider/runtime 层，不属于本技能的派发范围。
 
 ## 推荐组合（部分实证路由）
 
-Codex 6 个型号的 35-case 与 Claude 3 个型号的 15-case 来自 2026-07-10 smoke 聚合记录，但原始 manifest 未随交接提供，且未覆盖 catalog 中全部型号，因此标记 `partial_coverage`；Pi 的 easy 路由来自 2026-08-04 单模型 JSONL 实测。表内推荐只对已覆盖组合有效。Gemini 本轮为 `blocked_auth`，Antigravity 未获准运行付费/额度模型评测，Kimi/OpenCode/Qwen 仍是 `pending_benchmark`。不得把部分实证包装成全量完成，Codex/Claude 证据边界见 `reports/benchmark-2026-07-10.md`，Pi 边界见 `references/pi.md`。
+Codex 6 个型号的 35-case 与 Claude 3 个型号的 15-case 来自 2026-07-10 smoke 聚合记录，但原始 manifest 未随交接提供，且未覆盖 catalog 中全部型号，因此标记 `partial_coverage`；Pi 的 easy 路由来自 2026-08-04 单模型 JSONL 实测。表内推荐只对已覆盖组合有效。Gemini 本轮为 `blocked_auth`，Antigravity 未获准运行付费/额度模型评测，Kimi/OpenCode/Qwen 仍是 `pending_benchmark`。不得把部分实证包装成全量完成，Codex/Claude 证据边界见 `reports/benchmark-2026-07-10.md`，Pi 边界见 `references/pi-cli.md`。
 
 | 执行器家族 | easy 候选 | medium 候选 | hard 候选 | 状态 |
 |---|---|---|---|---|

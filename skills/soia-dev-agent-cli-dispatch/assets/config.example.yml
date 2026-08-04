@@ -13,3 +13,6 @@ storage:
   # null means use the portable defaults from DATA_STORAGE_SPEC.md.
   manifest_root: null
   prompt_root: null
+retention:
+  # A new run is blocked at this limit; cleanup is never automatic.
+  max_runs: 50

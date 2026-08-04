@@ -17,8 +17,8 @@ python3 scripts/audit_skills.py
 
 The template is intentionally generic: it shows config discovery, provider setup boundaries, and validation language without encoding any maintainer-specific vault layout.
 
-`soia-open-dev-coding-skills` and `soia-private-skills` intentionally use the same template
-path and outer structure:
+Every SOIA skill repository intentionally uses the same template path and outer
+structure:
 
 ```text
 templates/skill-template/
@@ -58,7 +58,7 @@ distribution, privacy, and release acceptance differ.
   the same list into several files.
 - **No documentation clutter:** required workflow stays in `SKILL.md`; do not
   add per-skill `README`, install guide, changelog, quick reference, or
-  architecture files. Use `references/` for durable supporting material.
+  architecture files. Use the resource taxonomy below instead.
 - **Portable language:** write instructions in imperative/infinitive form,
   explain the customer's next action, and never rely on maintainer paths,
   accounts, secrets, or private context.
@@ -67,6 +67,25 @@ Recommended authoring loop: identify concrete triggers and outputs → decide th
 resource layout → implement the smallest reliable workflow → run static and
 realistic output checks → attack the riskiest assumption → trim duplicated or
 nonessential instructions.
+
+### Resource taxonomy
+
+Keep the skill root as an entry surface, not a document drawer:
+
+| Resource | Location | Contract |
+|---|---|---|
+| Cross-host trigger, boundary, core workflow, receipt | `SKILL.md` | Required and independently executable |
+| Host UI metadata | `agents/openai.yaml` | Optional; never the only copy of required workflow |
+| Durable provider rules and machine-readable capability facts | `references/` | Stable supporting material; one mutable source of truth |
+| User-copy config templates and static inputs | `assets/` | Public placeholders only; private copies live outside the repo |
+| Reusable, anonymized, reproducible examples | `examples/` | Examples, not evidence claims |
+| Dated benchmark/research/implementation evidence | `reports/` | Historical snapshot with scope and provenance; never runtime truth |
+| Executable implementation and validators | `scripts/` | Portable paths, explicit errors, output validation |
+
+Do not leave `config.example.yml`, capability registries, benchmark reports, or
+provider manuals loose at the skill root. A machine-readable runtime fact belongs
+in `references/`; a template the customer copies belongs in `assets/`; a dated
+observation belongs in `reports/`.
 
 ### Customer-readable `SKILL.md` contract
 
@@ -112,15 +131,32 @@ dependencies:
 
 Rules:
 
-- `hard` / `optional` list SOIA-managed skill names only (published from
-  soia-open-dev-coding-skills or soia-private-skills).
+- `hard` / `optional` list SOIA-managed skill names only.
 - `hard` means the core workflow cannot complete without the dependency;
-  `soia-dev-sync-skills` expands the transitive hard closure on single-skill
+  `soia-meta-sync-skills` expands the transitive hard closure on single-skill
   sync and warns when a hard dependency is missing from the shared source.
 - `optional` and `external` are never auto-installed: at runtime the agent
   detects the gap, degrades, and reminds the customer with the install command.
 - Declare only real install-level dependencies. Pipeline neighbors,
   routing-table references, and prose mentions stay out of `dependencies`.
+
+### Description length and trigger shape (frontmatter)
+
+Treat `description` as a compact routing index, not a capability inventory:
+
+- Target at most 150 characters, counted as Unicode characters by Python
+  `len()`; Chinese characters, Latin letters, punctuation, and spaces each
+  count as one character.
+- Use one sentence for the skill's core responsibility, followed by `触发：`
+  and 2–3 high-discrimination trigger phrases.
+- Preserve the skill's identity and boundaries. Move feature lists, platform
+  inventories, fallback behavior, and other long-tail detail into the body.
+- Check sibling descriptions before choosing triggers; do not reuse phrases
+  that would make two skills compete for the same request.
+- New skills over 150 characters fail `scripts/audit_skills.py`. Existing long
+  descriptions may appear only in the explicit
+  `GRANDFATHER_LONG_DESCRIPTION` allowlist and produce a non-blocking warning;
+  slim them when the skill is next substantively edited.
 
 ### Version and timestamps (frontmatter)
 
@@ -215,7 +251,7 @@ outputs/transform
 $OBSIDIAN_VAULT
 --vault <path>
 SOIA_PKM_TRANSFORM_CONFIG=/path/to/transform.yml
-~/.config/soia-skills/soia-open-dev-coding-skills/soia-pkm/soia-pkm-transform/config.yml
+~/.config/soia-skills/soia-pkm-transform/config.yml
 ```
 
 Chinese or highly personal directory names are allowed only in a user's private config, never as public defaults.
@@ -240,7 +276,7 @@ WEREAD_API_KEY=real-key
 TELEGRAM_SESSION_STRING=real-session
 ```
 
-Provider authentication must live in the provider's private auth flow or a user-owned config file outside this repo.
+Provider authentication must live in the provider's official login store or OS keychain. Ordinary skill `config.yml` files hold non-secret preferences and pointers only.
 
 ### 3. Keep personal context out of public skills
 
@@ -261,13 +297,16 @@ Do not publish real names, ages, grades, schools, or private performance data.
 
 If behavior differs by user, make it configurable. Do not change code or `SKILL.md` to encode one user's needs.
 
-Use this order:
+Use this order for non-secret behavior:
 
 1. CLI argument
 2. Environment variable
 3. Skill-specific private `config.yml`
-4. Provider-owned login/config directory when the provider requires it
+4. Provider-owned non-secret profile/home pointer when required
 5. Generic safe fallback
+
+Credentials are a separate channel: official provider login or OS keychain first;
+environment variables are compatibility-only and must never be persisted or logged.
 
 Config templates must be generic and safe. They may show placeholders but not personal defaults.
 
@@ -277,12 +316,12 @@ Default private config location:
 ~/.config/soia-skills/<skill-name>/config.yml
 ```
 
-The file uses YAML with an `env:` mapping. Example:
+The file uses YAML with an `env:` mapping for non-secret values. Example:
 
 ```yaml
 env:
   OBSIDIAN_VAULT: "<vault-path>"
-  WEREAD_API_KEY: "<YOUR_API_KEY>"
+  PROVIDER_PROFILE: "<profile-name>"
 ```
 
 Skill-specific override variables should be named `SOIA_<TYPE>_<SHORT>_CONFIG_FILE`.
@@ -291,7 +330,7 @@ but new docs should prefer `CONFIG_FILE`.
 
 Provider-owned login state may live under the skill directory only when the skill explicitly
 owns that provider home. Example: `soia-pkm-transform` may set `NOTEBOOKLM_HOME` to
-`~/.config/soia-skills/soia-open-dev-coding-skills/soia-pkm/soia-pkm-transform/notebooklm`.
+`~/.config/soia-skills/soia-pkm-transform/notebooklm`.
 Other provider-owned stores such as `~/.config/aliyunpan/` stay with the provider; the
 skill config may only hold override pointers such as `ALIYUNPAN_CONFIG_DIR`.
 
@@ -300,7 +339,7 @@ flowchart LR
   A["CLI args"] --> B["process env"]
   B --> C["SOIA_<TYPE>_<SHORT>_CONFIG_FILE"]
   C --> D["~/.config/soia-skills/<skill>/config.yml"]
-  D --> E["provider-owned home override"]
+  D --> E["provider profile/home pointer"]
   E --> F["safe default / ask user"]
 ```
 
@@ -315,8 +354,8 @@ Before a skill script writes any file to disk, classify it first — never defau
 | 类别 | linux/macOS | Windows |
 |---|---|---|
 | A 临时 | `$TMPDIR` 或 `/tmp` | `%TEMP%`（由 `os.tmpdir()` / `tempfile` 自动处理） |
-| B 审计 | `${XDG_STATE_HOME:-~/.local/state}/<skill>/` | `%LOCALAPPDATA%/<skill>/state/` |
-| 私有 config | `~/.config/soia-skills/...` | `%APPDATA%/soia-skills/...` |
+| B 审计 | `${XDG_STATE_HOME:-~/.local/state}/soia-skills/<skill>/` | `%LOCALAPPDATA%/soia-skills/state/<skill>/` |
+| 私有 config | `~/.config/soia-skills/<skill>/` | `%APPDATA%/soia-skills/<skill>/` |
 | C 交付物默认 | `~/Downloads/<skill>/` 或用户指定 | 同左（Downloads 三平台皆有） |
 
 兼容说明：现有 skill 中的 Unix 写法逐步迁移；新脚本必须跨平台，不能新增 Unix-only 路径。
@@ -324,7 +363,7 @@ Before a skill script writes any file to disk, classify it first — never defau
 | Category | Nature | Destination |
 |---|---|---|
 | A. Disposable run output | Run reports / temporary intermediates, useful only right after this run | `${TMPDIR:-/tmp}/<skill-name>/`; consider `LOG_KEEP`-style rotation |
-| B. Audit trail | Recorded deletions, publishes, syncs, or other system-state changes that must stay traceable | `${XDG_STATE_HOME:-~/.local/state}/<skill-name>/`, with rotation and an override hook |
+| B. Audit trail | Recorded deletions, publishes, syncs, or other system-state changes that must stay traceable | `${XDG_STATE_HOME:-~/.local/state}/soia-skills/<skill-name>/`, with a retention bound and override hook |
 | C. User deliverable | Translations, images, generated documents the user asked for | A user-specified path, or the product's documented convention |
 | D. The product feature is the log | e.g. a session log that belongs in the vault | Whatever the product design says |
 | E. Pure stdout | Nothing here is worth keeping past this run | Do not write to disk |
@@ -363,7 +402,8 @@ Do not say "tested" or "passed" without saying which checks ran.
 
 Before commit, verify:
 
-- [ ] `SKILL.md` has `name` and concise `description` with triggers.
+- [ ] `SKILL.md` has `name` and a `description` of at most 150 characters: one
+      core-responsibility sentence plus `触发：` and 2–3 distinct triggers.
 - [ ] `SKILL.md` has a customer-readable intro covering capabilities, usage, dependencies/install, config, logs, and completion receipt.
 - [ ] No `metadata.json`; public skills use `SKILL.md` and optional `agents/openai.yaml`.
 - [ ] No maintainer-specific paths or vault directory names.
@@ -401,13 +441,13 @@ grep -RInE '/Users/|/home/[^/<]+|WECHAT_APP_SECRET=.{8,}|WEREAD_API_KEY=.{8,}|TE
 ## metadata.json
 
 Do not add `metadata.json` to public skills. It is a legacy SOIA private catalog
-format and is intentionally absent from `soia-open-dev-coding-skills`.
+format and is intentionally absent from `soia-open-skills`.
 
 Public discovery and install use:
 
 1. `skills/<name>/SKILL.md` frontmatter `name` and `description`
 2. optional `skills/<name>/agents/openai.yaml` for UI-facing metadata
-3. optional bundled `scripts/`, `references/`, and `assets/`
+3. optional bundled `scripts/`, `references/`, `assets/`, `examples/`, and `reports/`
 
 ## Agent metadata and consumption
 

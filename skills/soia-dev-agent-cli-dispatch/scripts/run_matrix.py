@@ -2,10 +2,10 @@
 # @created_by unknown
 # @created_at unknown
 # @modified_by openai/gpt-5.6-sol
-# @modified_at 2026-08-04 12:08:00
-# @version 0.4.0
+# @modified_at 2026-08-04 14:05:00
+# @version 0.5.0
 # @description Run resumable external AI dispatch matrices with usage, integrity evidence, and user-owned state storage.
-# @changelog Add DeepCode version probing, optional config loading, and portable default manifest storage.
+# @changelog Enforce safe run ids and block new runs when the configured retained-run limit is reached.
 """Resumable, strictly-serial executor for a model/executor dispatch matrix.
 
 Phase 1 scope: this script is built and self-tested against mock commands
@@ -1368,11 +1368,20 @@ def main() -> int:
 
     config_values = resolve_storage.effective_env(config)
     host_ai = args.host_ai or config_values.get("SOIA_HOST_AI") or "unknown"
-    manifest_dir = resolve_storage.resolve_manifest_dir(
-        args.run_id,
-        explicit=args.manifest_dir,
-        config=config,
-    )
+    try:
+        manifest_dir = resolve_storage.resolve_manifest_dir(
+            args.run_id,
+            explicit=args.manifest_dir,
+            config=config,
+        )
+        resolve_storage.ensure_run_capacity(
+            manifest_dir.parent,
+            manifest_dir.name,
+            resolve_storage.retained_run_limit(config),
+        )
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     manifest = run_matrix(
         cases=cases,
         run_id=args.run_id,

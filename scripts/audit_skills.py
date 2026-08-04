@@ -22,60 +22,24 @@ FRONTMATTER_DATETIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 # future legacy exception is reviewable instead of silently weakening the gate.
 GRANDFATHER_MISSING_FRONTMATTER: frozenset[str] = frozenset()
 GRANDFATHER_INVALID_DATETIME: frozenset[str] = frozenset()
+# Baseline of this repository only. Remove a name as soon as that skill is
+# substantively edited and gains the required customer-readable section.
 GRANDFATHER_MISSING_PRIVATE_DATA_SECTION = frozenset(
     {
-        "soia-cwork-feishu-cli",
-        "soia-dev-agent-cli-dispatch",
         "soia-dev-agent-md-advisor",
-        "soia-dev-ai-cli-upgrade",
-        "soia-dev-archify-diagrams",
         "soia-dev-coding-protocol",
-        "soia-dev-design-explorer",
         "soia-dev-doc-sync",
         "soia-dev-fix-loop",
         "soia-dev-github-ops",
-        "soia-dev-officecli-ops",
-        "soia-dev-open-design-ops",
         "soia-dev-project-scaffold",
-        "soia-dev-prompt-clarity",
-        "soia-dev-sync-skills",
         "soia-dev-task-execute",
         "soia-dev-terminal-ops",
-        "soia-pkm-alipan-drive-ops",
-        "soia-pkm-baidu-netdisk-ops",
-        "soia-pkm-bootstrap-vault-base",
-        "soia-pkm-bootstrap-vault-ima",
-        "soia-pkm-bootstrap-vault-obsidian",
-        "soia-pkm-clip-drive",
-        "soia-pkm-clip-github-repo",
-        "soia-pkm-clip-rednote",
-        "soia-pkm-clip-web",
-        "soia-pkm-clip-wechat-account",
-        "soia-pkm-clip-wechat-article",
-        "soia-pkm-clip-x",
-        "soia-pkm-compose-article-draft",
-        "soia-pkm-cover-image",
-        "soia-pkm-distill-article-opinion",
-        "soia-pkm-interpret-article-analysis",
-        "soia-pkm-library-book-catalog",
-        "soia-pkm-library-weread-sync",
-        "soia-pkm-maintain",
-        "soia-pkm-organize-article-moc",
-        "soia-pkm-publish-rednote-card",
-        "soia-pkm-publish-wechat-draft",
-        "soia-pkm-publish-x-article",
-        "soia-pkm-publish-x-thread",
-        "soia-pkm-reading-plan",
-        "soia-pkm-transform-article-notebooklm",
-        "soia-pkm-transform-article-ppt",
-        "soia-pkm-transform-article-visual",
-        "soia-pkm-transform-obsidian-pdf",
-        "soia-pkm-translate-article-zh",
     }
 )
-SEGMENT_EXEMPT = {"soia-pkm-maintain"}
+SEGMENT_EXEMPT: set[str] = set()
 DEPENDENCY_KEYS = {"hard", "optional", "external"}
 MAX_SKILL_LINES = 500
+MAX_DESCRIPTION_CHARS = 150
 DISALLOWED_SKILL_DOCS = {
     "README.md",
     "INSTALLATION_GUIDE.md",
@@ -348,8 +312,14 @@ def audit_skill(root: Path, skill_dir: Path, findings: list[Finding]) -> None:
         pass  # parse_frontmatter already emitted the type error
     elif not description:
         findings.append(Finding("ERROR", rel(skill_md, root), "missing frontmatter description"))
-    elif len(description) > 220:
-        findings.append(Finding("WARN", rel(skill_md, root), f"description is long ({len(description)} chars); keep trigger metadata concise"))
+    elif len(description) > MAX_DESCRIPTION_CHARS:
+        findings.append(
+            Finding(
+                "ERROR",
+                rel(skill_md, root),
+                f"description is long ({len(description)} chars); maximum is {MAX_DESCRIPTION_CHARS}",
+            )
+        )
 
     extras = sorted(set(fm) - ALLOWED_FRONTMATTER)
     if extras:

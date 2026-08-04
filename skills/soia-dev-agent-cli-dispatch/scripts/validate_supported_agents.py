@@ -2,10 +2,10 @@
 # @created_by claude opus 4.6
 # @created_at 2026-08-04 11:43:03
 # @modified_by gpt-5.6-sol
-# @modified_at 2026-08-04 11:43:03
-# @version 0.1.0
+# @modified_at 2026-08-04 14:05:00
+# @version 0.2.0
 # @description Validate the public supported-agents YAML without third-party YAML dependencies.
-# @changelog Add schema, workflow, agent, and reference-path checks for supported-agents.yml.
+# @changelog Follow the references/assets layout and validate the linked config template.
 """Validate supported-agents.yml and its referenced files."""
 
 from __future__ import annotations
@@ -76,6 +76,11 @@ def validate(path: Path) -> list[str]:
                 if field not in item:
                     errors.append(f"workflow {item.get('id')!r}: missing field {field}")
 
+    root = path.parent.parent
+    config_template = data.get("config_template")
+    if not isinstance(config_template, str) or not (root / config_template).is_file():
+        errors.append(f"config_template: missing file {config_template!r}")
+
     agents = data.get("agents")
     if not isinstance(agents, dict):
         return errors + ["agents must be a mapping"]
@@ -88,7 +93,6 @@ def validate(path: Path) -> list[str]:
     if extra:
         errors.append(f"unknown agents: {sorted(extra)}")
 
-    root = path.parent
     for name, entry in agents.items():
         if not isinstance(entry, dict):
             errors.append(f"{name}: entry must be a mapping")
@@ -108,9 +112,9 @@ def validate(path: Path) -> list[str]:
 
 
 def run_selftest() -> int:
-    path = Path(__file__).resolve().parents[1] / "supported-agents.yml"
+    path = Path(__file__).resolve().parents[1] / "references" / "supported-agents.yml"
     errors = validate(path)
-    print("=== validate_dispatch_capabilities.py selftest ===")
+    print("=== validate_supported_agents.py selftest ===")
     if errors:
         for error in errors:
             print(f"[FAIL] {error}")
@@ -126,7 +130,7 @@ def main() -> int:
     args = parser.parse_args()
     if args.selftest:
         return run_selftest()
-    path = args.file or Path(__file__).resolve().parents[1] / "supported-agents.yml"
+    path = args.file or Path(__file__).resolve().parents[1] / "references" / "supported-agents.yml"
     errors = validate(path)
     if errors:
         for error in errors:

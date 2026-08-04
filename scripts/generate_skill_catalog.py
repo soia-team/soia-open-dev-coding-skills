@@ -243,8 +243,8 @@ def resolve_repo_name(root: Path) -> str:
     if not url:
         return root.name
     # Take the last path component of either an https or scp-style remote URL:
-    # https://github.com/soia-team/soia-open-dev-coding-skills.git  -> soia-open-dev-coding-skills
-    # git@github.com:soia-team/soia-open-dev-coding-skills.git       -> soia-open-dev-coding-skills
+    # https://github.com/soia-team/<repo>.git  -> <repo>
+    # git@github.com:soia-team/<repo>.git       -> <repo>
     tail = url.rstrip("/")
     for sep in ("/", ":"):
         if sep in tail:

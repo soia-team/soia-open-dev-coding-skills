@@ -3,9 +3,9 @@ name: soia-dev-agent-cli-dispatch
 description: 受控调度外部 AI Agent CLI，选择已验证模型、隔离工作目录并回传模型、用量、费用与验证证据。触发：「派活给外部 AI」「调用 DeepCode/Pi/agy」「多 CLI 派发」
 dependencies:
   optional: [soia-meta-sync-skills]
-version: 1.3.0
+version: 1.3.1
 created_at: 2026-07-10 11:28:32
-updated_at: 2026-08-04 13:30:44
+updated_at: 2026-08-04 14:05:00
 created_by: claude opus 4.6
 updated_by: gpt-5.6-sol
 ---
@@ -23,7 +23,7 @@ updated_by: gpt-5.6-sol
 | 派一个任务给指定 AI CLI | 检查 CLI、认证、工作目录和权限，按该执行器规范启动 | 执行器、请求/实际模型、状态与验证结果 |
 | 让系统自动选择模型档位 | 只从已有验证证据的候选中选择；无候选时阻断 | 选择理由、推理档、价格区间与证据状态 |
 | 批量或断点执行 | 串行运行 case，逐项原子更新脱敏 manifest | 成功、失败、降级、超时、剩余任务与恢复状态 |
-| 查看支持哪些 AI Agent | 读取根目录 `supported-agents.yml` | 支持状态、使用方式、自动路由范围和对应规范 |
+| 查看支持哪些 AI Agent | 读取 `references/supported-agents.yml` | 支持状态、使用方式、自动路由范围和对应规范 |
 
 本技能不会把“进程退出码为 0”直接当成模型或任务质量已验证，也不会在没有证据时开放新的自动路由。
 
@@ -69,8 +69,8 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-agent-cli-di
 
 | 文件 | 性质 | 用途 |
 |---|---|---|
-| `supported-agents.yml` | 随技能发布的公共配置 | 支持哪些 AI Agent、适合什么工作、如何调用、验证到什么程度 |
-| `config.example.yml` | 私有配置模板 | 配置 host 标识及 state/temp 根目录；复制后由客户持有 |
+| `references/supported-agents.yml` | 随技能发布的公共配置 | 支持哪些 AI Agent、适合什么工作、如何调用、验证到什么程度 |
+| `assets/config.example.yml` | 私有配置模板 | 配置 host 标识及 state/temp 根目录；复制后由客户持有 |
 
 可选私有配置位置与覆盖变量：
 
@@ -86,7 +86,7 @@ SOIA_DEV_AGENT_CLI_DISPATCH_CONFIG_FILE=<custom-config-path>
 - prompt：写入 OS 临时目录下按 task-id 隔离的目录；任务结束后清理。除非客户明确要求，不把 prompt 长期保存。
 - run manifest：默认写入 `<state>/soia-skills/soia-dev-agent-cli-dispatch/runs/<run-id>/manifest.json`。
 - manifest 只保存脱敏状态、CLI 版本、请求/实际模型、Token、费用、时间和恢复信息；不保存 prompt、响应正文、凭据、账号或私有绝对路径。
-- 平台允许时，state 目录使用 `0700`、manifest 使用 `0600`。当前版本不自动删除历史 run；清理前先让客户查看范围并确认。
+- 平台允许时，state 目录使用 `0700`、manifest 使用 `0600`。默认最多保留 50 个 run；达到上限时阻断新 run，不自动删除。清理前先让客户查看范围并确认。
 - 仓库 checkout 不得作为运行时 config、state、cache 或临时目录。
 
 路径解析：
@@ -166,7 +166,7 @@ permissions:
 
 ### 2. 选择执行器
 
-1. 读取 `supported-agents.yml`，确认 `dispatch_supported`、验证状态和对应 reference。
+1. 读取 `references/supported-agents.yml`，确认 `dispatch_supported`、验证状态和对应 reference。
 2. 用户显式指定时按指定值执行，不做静默替换。
 3. 用户允许自动路由时，先判定 easy/medium/hard，再运行：
 
@@ -231,14 +231,15 @@ prompt 只包含：任务目标、必要上下文、目标文件/范围、权限
 
 | 需要 | 资源 |
 |---|---|
-| 支持哪些 AI Agent、用法和验证状态 | `supported-agents.yml` |
+| 支持哪些 AI Agent、用法和验证状态 | `references/supported-agents.yml` |
 | 路由判据与推荐组合 | `references/executor-routing.md` |
 | 统一调用字段、状态与恢复规则 | `references/dispatch-contract.md` |
-| 单个执行器命令 | `supported-agents.yml` 中该 agent 的 `reference` |
+| 单个执行器命令 | `references/supported-agents.yml` 中该 agent 的 `reference` |
 | 模型与价格运行时事实源 | `references/model-catalog.yml` |
+| 价格目录的带日期来源快照 | `reports/model-pricing-2026-07-10.md` |
 | 历史证据边界 | `reports/benchmark-2026-07-10.md` |
 | Pi + DeepSeek V4 Flash 实例 | `examples/pi-deepseek-v4-flash-easy.md` |
-| 私有运行配置模板 | `config.example.yml` |
+| 私有运行配置模板 | `assets/config.example.yml` |
 
 加载原则：主文件 → 所选执行器 reference，最多一跳；不要一次性加载全部 references。
 
@@ -248,7 +249,7 @@ prompt 只包含：任务目标、必要上下文、目标文件/范围、权限
 
 ```bash
 python3 scripts/resolve_storage.py --selftest
-python3 scripts/validate_dispatch_capabilities.py --selftest
+python3 scripts/validate_supported_agents.py --selftest
 python3 scripts/catalog_lib.py --selftest
 python3 scripts/estimate_cost.py --selftest
 python3 scripts/route_model.py --selftest
