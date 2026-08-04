@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # @created_by openai/gpt-5
 # @created_at 2026-07-10 17:58:15
-# @modified_by openai/gpt-5
-# @modified_at 2026-07-11 12:00:00
-# @version 0.1.2
+# @modified_by openai/gpt-5.6-sol
+# @modified_at 2026-08-04 11:13:15
+# @version 0.1.3
 # @description Select a verified executor model and reasoning effort from model-catalog.yml.
-# @changelog Keep account-scoped agy models isolated from Gemini API catalog routing.
+# @changelog Route verified Pi easy tasks to DeepSeek V4 Flash at low thinking.
 """Mechanically route an executor family to a verified model/effort pair."""
 
 from __future__ import annotations
@@ -117,6 +117,16 @@ def run_selftest() -> int:
     checks.append(("codex easy -> luna low", route_model(data, "codex", "easy")["selected_model"] == "gpt-5.6-luna" and route_model(data, "codex", "easy")["selected_reasoning_effort"] == "low"))
     checks.append(("codex medium -> terra medium", route_model(data, "codex", "medium")["selected_model"] == "gpt-5.6-terra" and route_model(data, "codex", "medium")["selected_reasoning_effort"] == "medium"))
     checks.append(("codex hard -> sol high", route_model(data, "codex", "hard")["selected_model"] == "gpt-5.6-sol" and route_model(data, "codex", "hard")["selected_reasoning_effort"] == "high"))
+    pi_easy = route_model(data, "pi", "easy")
+    checks.append(("pi easy -> deepseek-v4-flash low", pi_easy["selected_model"] == "deepseek-v4-flash" and pi_easy["selected_reasoning_effort"] == "low" and pi_easy["selection_status"] == "verified_auto"))
+    pi_explicit = route_model(data, "pi", "easy", "deepseek/deepseek-v4-flash", "low")
+    checks.append(("pi provider-qualified explicit model resolves", pi_explicit["selected_model"] == "deepseek-v4-flash" and pi_explicit["selection_status"] == "explicit"))
+    try:
+        route_model(data, "pi", "medium")
+    except RouteError:
+        checks.append(("pi medium blocks without task-quality evidence", True))
+    else:
+        checks.append(("pi medium blocks without task-quality evidence", False))
     explicit = route_model(data, "codex", "easy", "gpt-5.6-sol", "xhigh")
     checks.append(("explicit model/effort wins", explicit["selected_model"] == "gpt-5.6-sol" and explicit["selected_reasoning_effort"] == "xhigh" and explicit["selection_status"] == "explicit"))
     try:

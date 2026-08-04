@@ -15,7 +15,7 @@
 | 术语 | 含义 |
 |---|---|
 | `host_ai` | 调用本技能的宿主（任意兼容 Agent；可以是 Claude Code，也可以不是——本技能不绑定单一宿主） |
-| `executor_cli` | 被调度的外部 CLI 进程：`codex` / `claude` / `agy` / `gemini` / `kimi` / `opencode` / `qwen`（`qodercli` 有独立命令模板，见 `references/qodercli.md`；`agy` 有账号级运行时模型发现，但没有 API catalog 路由候选） |
+| `executor_cli` | 被调度的外部 CLI 进程：`codex` / `claude` / `agy` / `gemini` / `kimi` / `opencode` / `qwen` / `pi`（`qodercli` 有独立命令模板，见 `references/qodercli.md`；`agy` 有账号级运行时模型发现，但没有 API catalog 路由候选） |
 | `requested_model` | 本次调用要求使用的模型标识（可以是别名，见 `scripts/catalog_lib.py::find_model` 的宽松匹配规则） |
 | `actual_model` | 执行器实际使用的模型标识；只有执行器自己在输出里回显时才能拿到，拿不到就是 `null`，不得编造 |
 | `requested_reasoning_effort` | 请求的推理深度/强度参数（不同执行器命名不同） |
@@ -86,6 +86,7 @@
 2. **降级判定**：
    - `codex`：stdout 头部若有 `model: xxx` 行，与 `requested_model` 不一致时，状态标记为 `fallback_or_downgrade`（`scripts/run_matrix.py::detect_actual_model` 已实现，只扫描 stdout 前 2000 字符内的 `model:` 行）。
    - `claude`：**P4（2026-07-10）更新**——纯文本模式（`cmd_template` 不含 `--output-format json`）下 headless 输出仍然**没有**可靠的模型回显机制，任何成功调用一律标记 `actual_model_unverified`，**不允许**因为"看起来跑成功了"就报告为 `passed`。但当 `cmd_template` 显式带 `--output-format json`（或 `--output-format=json`）时，`scripts/run_matrix.py::detect_actual_model` 会解析 stdout JSON 的 `modelUsage`（键名即模型 id）或顶层 `model` 字段作为 `actual_model`，与 `requested_model` 比对后可以正常判定 `passed` / `fallback_or_downgrade`，不再一律 `actual_model_unverified`。比对前会先剥离两种已在真实 CLI（2.1.206，2026-07-10 实测验证，非猜测）上观察到的修饰后缀：不带 `--model` 时回显可能带方括号执行模式后缀（如 `claude-opus-4-8[1m]`）；用短别名（如 `haiku`）请求时回显可能带日期后缀（如 `claude-haiku-4-5-20251001`）；显式传完整 catalog `model_id`（如 `claude-haiku-4-5`）时回显通常精确匹配、无后缀。stdout 不是合法 JSON 时仍然回退到 `actual_model_unverified`，不假装已验证。细节与原始验证 payload 见 `references/benchmark-2026-07-10.md`。
+   - `pi`：调用必须使用 `--mode json`。`scripts/run_matrix.py` 从最终 assistant `message_end` 读取 `message.model` 和结构化 `usage`；模型叶子名与请求不一致时标记 `fallback_or_downgrade`，缺少 JSONL 模型证据时标记 `actual_model_unverified`。2026-08-04 已用 Pi 0.83.0 + `deepseek-v4-flash@low` 实测，边界见 `references/pi.md`。
    - 其他执行器（agy/gemini/kimi/opencode/qwen）：Phase 1 未实现模型回显检测，`notes` 会如实写明"model-echo verification is not implemented for this executor"，不假装已覆盖。
 3. **宿主模型变化**：`host_ai` 自身运行在哪个底层模型上，属于**仅可观测、不可控**的信息——本技能不能对宿主自己的模型完整性做强制门禁。如果宿主环境暴露了自身模型标识，记录下来即可；拿不到就写 `unknown`，不要推断。
 4. **能力限制声明**：任何一次 Model Integrity Gate 判定为 `actual_model_unverified` 或 `fallback_or_downgrade` 的调用，最终回执必须包含这次判定，不能只在内部日志里留痕、对客户只报"完成"。

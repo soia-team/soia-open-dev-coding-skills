@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # @created_by unknown
 # @created_at unknown
-# @modified_by openai/gpt-5
-# @modified_at 2026-07-11 12:00:00
-# @version 0.2.2
+# @modified_by openai/gpt-5.6-sol
+# @modified_at 2026-08-04 11:13:15
+# @version 0.3.0
 # @description Run resumable external AI dispatch matrices with usage and integrity evidence.
-# @changelog Assert that Antigravity preflight stays version-only with unavailable usage/model evidence.
+# @changelog Parse Pi JSONL usage/model evidence and reject unverified Pi text-mode passes.
 """Resumable, strictly-serial executor for a model/executor dispatch matrix.
 
 Phase 1 scope: this script is built and self-tested against mock commands
@@ -133,6 +133,24 @@ def now_iso() -> str:
 # ---------------------------------------------------------------------------
 
 
+def _pi_assistant_message_end(stdout: str) -> dict[str, Any] | None:
+    """Return Pi's final structured assistant message from --mode json JSONL."""
+    result = None
+    for line in stdout.splitlines():
+        try:
+            event = json.loads(line)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        message = event.get("message") if isinstance(event, dict) else None
+        if (
+            event.get("type") == "message_end"
+            and isinstance(message, dict)
+            and message.get("role") == "assistant"
+        ):
+            result = message
+    return result
+
+
 def parse_usage(executor: str, stdout: str) -> dict[str, Any]:
     """Extract structured usage without inventing an input/output split."""
     empty = {
@@ -186,6 +204,29 @@ def parse_usage(executor: str, stdout: str) -> dict[str, Any]:
         if match:
             total = int(match.group(1).replace(",", ""))
             return {**empty, "total_tokens": total, "usage_status": "partial", "usage_source": "claude_text_total"}
+        return empty
+    if executor == "pi":
+        message = _pi_assistant_message_end(stdout)
+        usage = message.get("usage") if isinstance(message, dict) else None
+        if isinstance(usage, dict):
+            fields = {
+                "input_tokens": usage.get("input"),
+                "cached_input_tokens": usage.get("cacheRead"),
+                "cache_write_tokens": usage.get("cacheWrite"),
+                "output_tokens": usage.get("output"),
+                "total_tokens": usage.get("totalTokens"),
+            }
+            if all(isinstance(value, int) and not isinstance(value, bool) for value in fields.values()):
+                cost = usage.get("cost")
+                reported = cost.get("total") if isinstance(cost, dict) else None
+                if not isinstance(reported, (int, float)) or isinstance(reported, bool):
+                    reported = None
+                return {
+                    **fields,
+                    "usage_status": "measured",
+                    "usage_source": "pi_jsonl_message_end_usage",
+                    "provider_reported_cost_usd": reported,
+                }
         return empty
     # gemini/kimi/opencode/qwen: no confirmed parsing rule in Phase 1 scope.
     return empty
@@ -286,6 +327,10 @@ def detect_actual_model(executor: str, stdout: str, cmd: str | None = None) -> s
         except (json.JSONDecodeError, ValueError):
             return None
         return _extract_claude_model_from_json(payload)
+    if executor == "pi":
+        message = _pi_assistant_message_end(stdout)
+        model = message.get("model") if isinstance(message, dict) else None
+        return model if isinstance(model, str) and model else None
     return None
 
 
@@ -470,9 +515,29 @@ def run_one_case(
                     "status is intentionally not reported as a clean pass (Model Integrity Gate). "
                     "Re-run with --output-format json for a verifiable modelUsage/model echo."
                 )
+        elif executor == "pi":
+            requested_leaf = model.rsplit("/", 1)[-1] if isinstance(model, str) else None
+            if actual_model and requested_leaf:
+                if actual_model == requested_leaf:
+                    record["status"] = "passed"
+                    record["notes"].append(
+                        f"pi --mode json echoed message.model={actual_model!r}; "
+                        f"matches requested {model!r}"
+                    )
+                else:
+                    record["status"] = "fallback_or_downgrade"
+                    record["notes"].append(
+                        f"pi echoed model={actual_model!r} via --mode json, requested {model!r}"
+                    )
+            else:
+                record["status"] = "actual_model_unverified"
+                record["notes"].append(
+                    "pi text mode does not provide structured model evidence; re-run with "
+                    "--mode json and retain the message_end event."
+                )
         else:
             record["status"] = "passed"
-            if executor not in ("codex", "claude"):
+            if executor not in ("codex", "claude", "pi"):
                 record["notes"].append(
                     f"model-echo verification is not implemented for executor={executor!r} in Phase 1"
                 )
@@ -999,7 +1064,100 @@ def run_selftest() -> int:
             claude_by_id["claude-text-mode-still-unverified"]["status"],
         )
 
-        # --- Non-codex/non-claude executor gets an honest "not implemented" note, not a fabricated pass.
+        # --- Pi runtime support: --mode json JSONL carries both served-model
+        # and structured usage evidence. Text mode must remain unverified.
+        pi_json_dir = tmp_path / "manifest-pi-json"
+        pi_json_cases_path = tmp_path / "cases-pi-json.json"
+        pi_message = {
+            "type": "message_end",
+            "message": {
+                "role": "assistant",
+                "provider": "deepseek",
+                "model": "deepseek-v4-flash",
+                "content": [{"type": "text", "text": "ok"}],
+                "usage": {
+                    "input": 105,
+                    "output": 61,
+                    "cacheRead": 384,
+                    "cacheWrite": 0,
+                    "reasoning": 56,
+                    "totalTokens": 550,
+                    "cost": {"input": 0.0000147, "output": 0.00001708, "cacheRead": 0.0000010752, "cacheWrite": 0, "total": 0.0000328552},
+                },
+            },
+        }
+        pi_mismatch = json.loads(json.dumps(pi_message))
+        pi_mismatch["message"]["model"] = "deepseek-v4-pro"
+        pi_json_cases = [
+            {
+                "case_id": "pi-json-verified",
+                "provider": "deepseek",
+                "executor": "pi",
+                "model": "deepseek/deepseek-v4-flash",
+                "reasoning": "low",
+                "cmd_template": f"printf '%s\\n' '{json.dumps(pi_message)}' # pi -p --mode json",
+            },
+            {
+                "case_id": "pi-json-mismatch",
+                "provider": "deepseek",
+                "executor": "pi",
+                "model": "deepseek-v4-flash",
+                "reasoning": "low",
+                "cmd_template": f"printf '%s\\n' '{json.dumps(pi_mismatch)}' # pi -p --mode json",
+            },
+            {
+                "case_id": "pi-text-unverified",
+                "provider": "deepseek",
+                "executor": "pi",
+                "model": "deepseek-v4-flash",
+                "reasoning": "low",
+                "cmd_template": "printf 'ok\\n' # pi -p text mode",
+            },
+        ]
+        pi_json_cases_path.write_text(json.dumps(pi_json_cases), encoding="utf-8")
+        pi_manifest = run_matrix(
+            cases=pi_json_cases,
+            run_id="selftest-pi-json",
+            manifest_dir=pi_json_dir,
+            cases_path=pi_json_cases_path,
+            resume=False,
+            host_ai="selftest-host",
+            skill_source_path=str(Path(__file__).resolve().parents[1]),
+            timeout_seconds=30,
+            catalog_data=selftest_catalog_data,
+        )
+        pi_by_id = {c["case_id"]: c for c in pi_manifest["cases"]}
+        verified_pi = pi_by_id["pi-json-verified"]
+        check("pi json exact model -> passed", verified_pi["status"] == "passed", verified_pi["status"])
+        check("pi json actual model captured", verified_pi["actual_model"] == "deepseek-v4-flash", str(verified_pi["actual_model"]))
+        check(
+            "pi json usage fields measured without collapsing cache tokens",
+            verified_pi["input_tokens"] == 105
+            and verified_pi["cached_input_tokens"] == 384
+            and verified_pi["cache_write_tokens"] == 0
+            and verified_pi["output_tokens"] == 61
+            and verified_pi["total_tokens"] == 550
+            and verified_pi["usage_status"] == "measured",
+            str({key: verified_pi[key] for key in ("input_tokens", "cached_input_tokens", "cache_write_tokens", "output_tokens", "total_tokens", "usage_status")}),
+        )
+        check(
+            "pi json provider-reported cost captured",
+            verified_pi["provider_reported_cost_usd"] == 0.0000328552,
+            str(verified_pi["provider_reported_cost_usd"]),
+        )
+        check(
+            "pi json model mismatch -> fallback_or_downgrade",
+            pi_by_id["pi-json-mismatch"]["status"] == "fallback_or_downgrade",
+            pi_by_id["pi-json-mismatch"]["status"],
+        )
+        check(
+            "pi text mode -> actual_model_unverified",
+            pi_by_id["pi-text-unverified"]["status"] == "actual_model_unverified",
+            pi_by_id["pi-text-unverified"]["status"],
+        )
+
+        # --- Non-codex/non-claude/non-pi executor gets an honest
+        # "not implemented" note, not a fabricated pass.
         check(
             "unsupported-detection: unrelated executor still reaches a status",
             manifest3["cases"][0]["status"] in ALL_STATUSES,
@@ -1039,6 +1197,18 @@ def run_selftest() -> int:
         str(detailed_usage),
     )
     check("parse_tokens: unknown executor returns None", parse_tokens("gemini", "tokens used\n42") is None)
+    pi_helper_payload = json.dumps(
+        {
+            "type": "message_end",
+            "message": {
+                "role": "assistant",
+                "model": "deepseek-v4-flash",
+                "usage": {"input": 2, "output": 3, "cacheRead": 5, "cacheWrite": 7, "totalTokens": 17, "cost": {"total": 0.01}},
+            },
+        }
+    )
+    check("parse_tokens: pi JSONL total", parse_tokens("pi", pi_helper_payload) == 17)
+    check("detect_actual_model: pi JSONL message.model", detect_actual_model("pi", pi_helper_payload) == "deepseek-v4-flash")
     check(
         "agy preflight command is version-only and never sends a prompt",
         VERSION_COMMANDS.get("agy") == ["agy", "--version"],

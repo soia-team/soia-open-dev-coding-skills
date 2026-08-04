@@ -1,0 +1,104 @@
+# Machine-readable executor support matrix for soia-dev-agent-cli-dispatch.
+# Keep mutable support facts here; prose should link here instead of copying the full matrix.
+schema_version: 1
+updated_at: "2026-08-04"
+executors:
+  codex:
+    command: codex
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: partial_coverage
+    prompt_transport: stdin
+    structured_output: text_header
+    model_integrity: verified
+    usage_evidence: partial
+    auto_routing: [easy, medium, hard]
+    reference: references/codex.md
+  claude:
+    command: claude
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: partial_coverage
+    prompt_transport: stdin_wrapper
+    structured_output: json
+    model_integrity: verified
+    usage_evidence: measured
+    auto_routing: [easy, medium]
+    reference: references/claude-code.md
+  pi:
+    command: pi
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: smoke_tested_easy
+    prompt_transport: at_file
+    structured_output: jsonl
+    model_integrity: verified
+    usage_evidence: measured
+    auto_routing: [easy]
+    reference: references/pi.md
+  agy:
+    command: agy
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: availability_discovered
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/antigravity-cli.md
+  gemini:
+    command: gemini
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: blocked_auth_in_latest_benchmark
+    prompt_transport: argument
+    structured_output: json_or_jsonl
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/gemini-cli.md
+  kimi:
+    command: kimi
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: pending_benchmark
+    prompt_transport: argument
+    structured_output: text_or_stream_json
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/kimi-cli.md
+  opencode:
+    command: opencode
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: pending_benchmark
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/opencode-qwen.md
+  qwen:
+    command: qwen
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: pending_benchmark
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/opencode-qwen.md
+  qodercli:
+    command: qodercli
+    dispatch_supported: true
+    matrix_supported: false
+    verification_status: command_template_only
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/qodercli.md
