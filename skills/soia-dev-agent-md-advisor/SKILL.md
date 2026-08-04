@@ -1,11 +1,11 @@
 ---
 name: soia-dev-agent-md-advisor
 description: AI 项目指令与配置设计顾问，提供诊断、起草和改写建议。触发：「审查我的 AGENTS.md」「CLAUDE.md 怎么写」「多个 AI 入口怎么管」
-version: 1.0.2
+version: 1.0.3
 created_at: 2026-07-10 09:10:23
-updated_at: 2026-07-23 07:16:02
+updated_at: 2026-08-04 14:59:54
 created_by: claude opus 4.6
-updated_by: gpt-5.6-luna
+updated_by: gpt-5.6-sol
 ---
 
 # soia-dev-agent-md-advisor
@@ -88,6 +88,14 @@ SOIA_DEV_AGENT_MD_ADVISOR_CONFIG_FILE=<custom-config-path>
 - 本技能当前版本**不需要**创建 `config.yml`：三种模式的诊断维度、流程和模板都直接写在本 `SKILL.md` 内，没有需要外部化的私有状态。上述路径预留给未来"客户自定义诊断维度权重 / 长度预算阈值"这类可选增强，非必需项。
 - 本技能不需要、也不应该读取任何 API key、cookie、session、账号凭据——诊断和产出只处理客户提供的**文本文件**和项目里可公开读取的配置文件。
 - `soia-dev-doc-sync` 是分工邻居，不是依赖：本技能不调用它，也不做它负责的跨文档状态对账；边界见上方"与 soia-dev-doc-sync 的分界"。
+
+### 私密信息与中间数据
+
+- 输入可能包含客户尚未公开的 AI 指令和项目结构；只读取本次范围内的文件，不扫描账号、vault 或无关目录，也不把原文复制进公共示例。
+- 本技能不创建持久 state、cache 或独立日志。诊断草稿只留在当前 Agent 会话；宿主自身的会话留存由宿主配置管理。
+- 默认只在回复中交付诊断或骨架。客户明确授权写文件时，只写目标项目中的指定文件；覆盖既有文件前必须先展示差异并确认。
+- 普通 `config.yml` 只允许未来保存非秘密偏好；本技能不需要凭据，也不得保存 prompt、完整客户文件或响应正文。
+- 回执只摘录证明 finding 所需的最小片段，并对账号、路径或其他敏感字段做脱敏。
 
 ### 日志与完成回执
 

@@ -1,11 +1,11 @@
 ---
 name: soia-dev-github-ops
 description: GitHub gh CLI 运维、PR 合规审查与修复。触发：「查 CI 挂了」「发 release」「加协作者权限」
-version: 2.1.2
+version: 2.1.3
 created_at: 2026-07-09 07:45:34
-updated_at: 2026-07-23 07:16:02
+updated_at: 2026-08-04 14:59:54
 created_by: claude opus 4.6
-updated_by: gpt-5.6-luna
+updated_by: gpt-5.6-sol
 dependencies:
   hard: [soia-dev-review-panel, soia-dev-fix-loop]
 ---
@@ -57,7 +57,7 @@ claude plugin install soia-dev@soia
 npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-github-ops -y
 ```
 
-配置约定：
+复制 [`assets/config.example.yml`](assets/config.example.yml) 后按需填写非秘密默认值。配置约定：
 
 ```text
 ~/.config/soia-skills/soia-dev-github-ops/config.yml
@@ -65,8 +65,16 @@ SOIA_DEV_GITHUB_OPS_CONFIG_FILE=<custom-config-path>
 ```
 
 - 如果本技能不需要私有配置，可以不创建 `config.yml`。
-- 如果需要 API key、cookie、session、provider home 或本机路径，只能放进私有 `config.yml`、进程环境或 provider 自己的登录态里，不能写进仓库、vault 正文或日志。
+- 普通 `config.yml` 只保存非秘密默认值，例如仓库名或 profile 指针。GitHub token、cookie 和 session 必须留在 `gh auth login` 管理的官方凭据存储或系统凭据库，不能写进配置、仓库、正文或日志。
 - 第三方 skill 只能声明依赖和安装方式，不直接修改第三方 skill 文件。
+
+### 私密信息与中间数据
+
+- `gh` 查询结果可能包含私有仓库名、issue/PR 正文、成员信息和日志；只读取本次操作所需字段，默认通过结构化 stdout 处理，不持久保存完整响应。
+- GitHub 凭据只由 `gh auth login` 的官方存储或系统凭据库管理；不得把 token、cookie、session、完整认证输出或秘密环境变量写入普通配置、命令参数、issue、PR、评论或日志。
+- 远端 issue、PR、review、release 和权限是 GitHub 产品状态，不是本技能私有缓存；任何创建或修改都按 Safety Model 取得授权并在完成后查询远端复核。
+- 本技能默认不创建本地 state 或 cache。客户明确要求导出报告时写入其指定路径；临时响应放操作系统临时目录并在任务结束后清理。
+- 回执只记录 repo、对象编号、状态、URL 和必要错误摘要；私有正文、协作者信息和日志内容按最小披露原则脱敏。
 
 ### 日志与完成回执
 
@@ -263,6 +271,19 @@ Before final response:
 - For mutating operations, say what changed and include the resulting URL or id.
 - For blocked auth or permission, say which `gh` command failed and what the user
   must configure.
+
+## 真实前向验收
+
+对已知仓库中的真实对象执行只读查询，并核对输出内容而不只看退出码：
+
+```bash
+gh pr view <number> --repo <owner>/<repo> \
+  --json number,state,mergeable,baseRefName,headRefName,url
+```
+
+验收至少确认：编号与目标一致、URL 属于目标仓库、base/head 分支符合请求、状态字段可解释，且输出不含 token 或认证详情。对不存在的编号补一条预期失败检查，确认错误没有被包装成成功。
+
+写操作仅在客户明确授权后测试；完成后必须用独立的只读 `gh view`/`gh api GET` 查询远端对象，逐字段核对预期状态。权限变更还要按协作者手册复查实际 role，release 要复查 tag、draft/prerelease 和发布时间，不能把写命令退出 0 当作验收。
 
 ## 分流程手册
 

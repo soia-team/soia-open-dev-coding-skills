@@ -1,11 +1,11 @@
 ---
 name: soia-dev-fix-loop
 description: 用五步闭环处理代码审查或测试发现：复现、决策、修复、回归复核与回执，防止遗漏、假修复和无证据收口。
-version: 1.0.1
+version: 1.0.2
 created_at: 2026-07-22 21:25:39
-updated_at: 2026-07-22 21:13:22
+updated_at: 2026-08-04 14:59:54
 created_by: gpt-5.6-terra
-updated_by: gpt-5.6-luna
+updated_by: gpt-5.6-sol
 ---
 
 # soia-dev-fix-loop
@@ -51,6 +51,14 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-fix-loop -y
 ```
 
 本技能无需其他专用安装或私有配置。强依赖是可访问的 findings、目标工作区和与风险相称的验证入口；遵循目标仓库已有的贡献说明和检查约定。
+
+### 私密信息与中间数据
+
+- Findings、失败日志和复现材料可能含源码、账号或客户数据；只保留决策所需的最小摘录，先脱敏再进入回执或可提交 fixture。
+- 修复和测试产物留在目标工作区；本技能不建立自己的持久 state、cache 或完整 findings 副本。需要长期追踪的 defer 项写入客户明确指定的 issue、任务系统或文件。
+- 临时复现数据放在目标仓库既有测试目录或操作系统临时目录；任务结束后只清理本技能创建且已确认可删除的临时内容。
+- 凭据仅使用 Provider 官方登录态或系统凭据库，不写入普通配置、命令、日志、测试或提交。
+- 完成回执按 finding ID 记录决策、最小证据和验证结果，不回显完整 prompt、响应正文或无关日志。
 
 ### 日志与完成回执
 

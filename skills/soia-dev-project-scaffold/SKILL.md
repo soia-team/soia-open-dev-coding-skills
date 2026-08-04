@@ -1,11 +1,11 @@
 ---
 name: soia-dev-project-scaffold
 description: 为任意新 Git 项目生成最小 AI 协作基线：可编辑的 AGENTS.md 和 docs 导航目录；在写入前确认目标路径。
-version: 1.0.1
+version: 1.0.2
 created_at: 2026-07-20 11:52:54
-updated_at: 2026-07-22 21:13:22
+updated_at: 2026-08-04 14:59:54
 created_by: gpt-5.6-luna
-updated_by: gpt-5.6-luna
+updated_by: gpt-5.6-sol
 ---
 
 # soia-dev-project-scaffold
@@ -41,6 +41,14 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-project-scaf
 ```
 
 依赖 POSIX shell、`mkdir` 和 `git`（仅用于检查，不初始化仓库）。不需要私有配置；项目特定规则应由客户在生成后的 `AGENTS.md` 中补充。
+
+### 私密信息与中间数据
+
+- 本技能只读取目标目录是否存在及同名文件状态，不扫描目标项目之外的文件，也不收集账号、凭据或项目正文。
+- 正式产物仅是下方列出的基线文件，写入客户明确指定的项目路径；发现同名文件时停止，不创建隐式备份、不覆盖。
+- 脚本不建立持久 state、cache、私有配置或独立日志，也不需要 Provider 凭据。帮助和预览结果只输出到 stdout。
+- 如实现过程中需要临时检查文件，使用操作系统临时目录并在完成后清理；不得把客户绝对路径或项目内容复制进公共模板。
+- 回执仅列目标路径、创建/跳过的相对文件和验证结果，不打印无关目录内容。
 
 ### 日志与完成回执
 

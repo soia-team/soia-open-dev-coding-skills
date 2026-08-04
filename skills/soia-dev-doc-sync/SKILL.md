@@ -1,11 +1,11 @@
 ---
 name: soia-dev-doc-sync
 description: 审计并修复任意代码仓的 docs、README、CHANGELOG、VERSION 与明确真源之间的事实漂移；先建立真源优先级与证据，再按依赖顺序同步派生文档。
-version: 1.0.1
+version: 1.0.2
 created_at: 2026-07-20 17:22:49
-updated_at: 2026-07-22 21:13:22
+updated_at: 2026-08-04 14:59:54
 created_by: gpt-5.6-terra
-updated_by: gpt-5.6-luna
+updated_by: gpt-5.6-sol
 ---
 
 # soia-dev-doc-sync
@@ -48,6 +48,14 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-doc-sync -y
 强依赖：目标仓库及其真源文件的只读访问。可选使用项目已有的 lint、测试、生成器或链接检查器；缺少时如实报告未覆盖的验证面。
 
 本技能无需私有配置。用户特定路径只在本次参数或环境中提供，不写入技能。
+
+### 私密信息与中间数据
+
+- 真源、派生文档和 diff 可能包含未公开产品信息；只读取本次对账范围，不把全文复制到公共示例、临时报告或回执。
+- 文档补丁和用户要求的交付物写回目标仓库或用户指定路径；本技能不建立独立的持久 state、cache 或影子文档库。
+- 生成器、链接检查器等工具的中间文件服从目标仓库约定；否则放入操作系统临时目录，并在确认不属于项目产物后清理。
+- Provider 凭据留在官方登录态或系统凭据库。普通 `config.yml` 只能保存非秘密路径或偏好，不能保存 API key、cookie、session 或文档正文。
+- 回执只保存 finding 的最小证据、变更路径和验证摘要；需要引用敏感内容时先脱敏。
 
 ### 日志与完成回执
 
