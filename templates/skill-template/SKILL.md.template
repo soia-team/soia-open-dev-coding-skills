@@ -17,7 +17,8 @@ updated_by: <model-name>
 - 保持本文件是可独立执行的核心流程；把供应商差异、长清单和背景知识放到 `references/`，并从这里直接链接。
 - 让自由度匹配风险：分析可保留判断空间；配置项写成参数；删除、覆盖、发送、发布或修改远端状态必须支持预览/确认边界。
 - 先定义验收证据，再执行。复杂流程至少用一个 fixture 或真实前向测试核对实际输出，不把“命令返回 0”当成完成证据。
-- 保持正文简洁，目标不超过 500 行；不要在技能目录中新增 README、安装指南、CHANGELOG、QUICK_REFERENCE 或 ARCHITECTURE。
+- 保持正文简洁，目标不超过 500 行；不要新增 README、安装指南、CHANGELOG、QUICK_REFERENCE 或 ARCHITECTURE。
+- 供应商规范与机器事实放 `references/`；客户复制模板放 `assets/`；可复用实例放 `examples/`；带日期证据放 `reports/`。
 - 日志和最终回复只报告必要的状态、数量、类别和问题；不输出本地绝对路径、逐个本地文件名、用户名、密码、密钥、cookie 或 token。
 
 ## 客户可读说明
@@ -55,17 +56,17 @@ updated_by: <model-name>
 配置约定：
 
 ```text
-~/.config/soia-skills/<repo>/<skill-type>/<skill-name>/config.yml
+~/.config/soia-skills/<skill-name>/config.yml
 SOIA_<TYPE>_<SHORT>_CONFIG_FILE=<custom-config-path>
 ```
 
 - 如果本技能不需要私有配置，可以不创建 `config.yml`。
-- API key、cookie、session、provider home、本机路径只放私有 `config.yml`、进程环境或 provider 自己的登录态里。
+- 普通 `config.yml` 只放非秘密偏好和用户选择路径；API key、cookie、session 留在 provider 官方登录态或系统凭据库。
 - 如果依赖第三方 skill，记录上游来源和安装方式，不直接修改第三方 skill 文件。
 
 ### 私密信息与中间数据
 
-- 凭据只写入用户自有的私有配置、进程环境或 provider 登录态，不进入 skill、日志或交付物。
+- 凭据只进入 provider 登录态或系统凭据库；环境变量仅作兼容回退，不进入 skill、普通 config、日志或交付物。
 - 中间产物按 [DATA_STORAGE_SPEC.md](../../DATA_STORAGE_SPEC.md) 约定落盘，并说明位置、保留期与脱敏要求。
 
 ### 日志与完成回执
@@ -130,8 +131,10 @@ params:
 - Provider setup and fallback rules: [references/providers.md](references/providers.md)
 - Optional config example: [assets/config.example.yml](assets/config.example.yml)
 - Optional config resolver: `scripts/resolve_config.py`
+- Reusable public example: `examples/<workflow>.md`
+- Dated evidence report: `reports/<topic>-<YYYY-MM-DD>.md`
 
-Delete unused resource bullets. Do not add README / INSTALL / CHANGELOG inside a skill.
+Delete unused resource bullets and empty directories. Do not add README / INSTALL / CHANGELOG inside a skill.
 
 ## Agent Metadata
 

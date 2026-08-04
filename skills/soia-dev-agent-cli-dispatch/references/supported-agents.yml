@@ -1,0 +1,171 @@
+# Public machine-readable AI-agent support and usage registry for soia-dev-agent-cli-dispatch.
+# This is not a credential file. Keep mutable support facts here; prose should link here instead of copying the matrix.
+schema_version: 1
+config_template: assets/config.example.yml
+updated_at: "2026-08-04"
+skill:
+  name: soia-dev-agent-cli-dispatch
+  display_name: "Dev Agent CLI Dispatch"
+  version: "1.3.1"
+  purpose: "将编码、审查、分析、研究、文档和内容任务派发给外部 AI CLI，并回传模型、用量与成本证据。"
+  triggers: [派活给外部 AI, 调用 DeepCode/Pi/agy, 多 CLI 派发]
+usage:
+  prerequisites: [目标工作目录, 已安装的目标 CLI, provider 自己的登录态]
+  auto_route:
+    command: "python3 scripts/route_model.py --executor <executor> --complexity <easy|medium|hard>"
+    rule: "只从 verified candidate 自动选择；没有证据时返回阻断。"
+  explicit_dispatch:
+    rule: "显式 model/reasoning 优先；未验证组合必须标记 explicit_unverified。"
+  verified_pi_example:
+    command: "pi -p --mode json --no-session --provider deepseek --model deepseek-v4-flash --thinking low '@<prompt-file>'"
+    result: "从最终 assistant message_end 核对实际模型、input/cache/output/total tokens 和 cost。"
+  receipt_fields: [requested_model, actual_model, requested_reasoning, actual_reasoning, usage, cost, validation_status, recovery_state]
+supported_workflows:
+  - id: easy-code-and-analysis
+    label: "简单编码与轻分析"
+    complexity: easy
+    dispatch_mode: automatic_or_explicit
+    recommended_executors: [pi, codex, claude]
+    verified_auto_route: "pi/deepseek-v4-flash@low"
+    status: smoke_tested_for_pi
+    suitable_for: [小范围 bug 修复, 简单脚本, 配置修改, 测试与 lint, 摘要, 分类, 提取, 翻译]
+    avoid_for: [删除或覆盖, 安全边界变更, 复杂架构决策]
+  - id: medium-code-and-review
+    label: "中等编码、验证与小范围重构"
+    complexity: medium
+    dispatch_mode: explicit_or_partial_auto
+    recommended_executors: [codex, claude, kimi, pi]
+    verified_auto_route: null
+    status: partial_or_pending_benchmark
+    suitable_for: [多文件实现, build/verify, 小范围重构, 常规 diff review]
+    avoid_for: [未经授权的外部写入, 不可逆发布]
+  - id: hard-code-review-and-design
+    label: "复杂审查、设计与高风险变更"
+    complexity: hard
+    dispatch_mode: explicit_only
+    recommended_executors: [codex, claude]
+    verified_auto_route: null
+    status: partial_coverage_no_pi_verification
+    suitable_for: [复杂 diff review, 架构取舍, 高风险变更前分析, 大上下文推理]
+    avoid_for: [缺少授权或回滚路径的直接执行]
+  - id: documentation-and-content
+    label: "文档、研究与内容生产"
+    complexity: easy_or_medium
+    dispatch_mode: explicit_only
+    recommended_executors: [agy, gemini, qwen, opencode, pi, deepcode]
+    verified_auto_route: null
+    status: executor_template_or_pending_benchmark
+    suitable_for: [文档草稿, 资料总结, 结构化提取, 内容改写]
+    avoid_for: [把未核验事实直接发布]
+agents:
+  codex:
+    command: codex
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: partial_coverage
+    prompt_transport: stdin
+    structured_output: text_header
+    model_integrity: verified
+    usage_evidence: partial
+    auto_routing: [easy, medium, hard]
+    reference: references/codex-cli.md
+  claude:
+    command: claude
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: partial_coverage
+    prompt_transport: stdin_wrapper
+    structured_output: json
+    model_integrity: verified
+    usage_evidence: measured
+    auto_routing: [easy, medium]
+    reference: references/claude-code-cli.md
+  pi:
+    command: pi
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: smoke_tested_easy
+    prompt_transport: at_file
+    structured_output: jsonl
+    model_integrity: verified
+    usage_evidence: measured
+    auto_routing: [easy]
+    reference: references/pi-cli.md
+  agy:
+    command: agy
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: availability_discovered
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/antigravity-cli.md
+  gemini:
+    command: gemini
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: blocked_auth_in_latest_benchmark
+    prompt_transport: argument
+    structured_output: json_or_jsonl
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/gemini-cli.md
+  kimi:
+    command: kimi
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: pending_benchmark
+    prompt_transport: argument
+    structured_output: text_or_stream_json
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/kimi-cli.md
+  opencode:
+    command: opencode
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: pending_benchmark
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/opencode-qwen-cli.md
+  qwen:
+    command: qwen
+    dispatch_supported: true
+    matrix_supported: true
+    verification_status: pending_benchmark
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/opencode-qwen-cli.md
+  qodercli:
+    command: qodercli
+    dispatch_supported: true
+    matrix_supported: false
+    verification_status: command_template_only
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/qoder-cli.md
+  deepcode:
+    command: deepcode
+    dispatch_supported: true
+    matrix_supported: false
+    verification_status: command_help_verified
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/deepcode-cli.md
+    provider_config: "~/.deepcode/settings.json"

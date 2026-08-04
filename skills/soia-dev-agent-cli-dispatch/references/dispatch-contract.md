@@ -15,7 +15,7 @@
 | 术语 | 含义 |
 |---|---|
 | `host_ai` | 调用本技能的宿主（任意兼容 Agent；可以是 Claude Code，也可以不是——本技能不绑定单一宿主） |
-| `executor_cli` | 被调度的外部 CLI 进程：`codex` / `claude` / `agy` / `gemini` / `kimi` / `opencode` / `qwen`（`qodercli` 有独立命令模板，见 `references/qodercli.md`；`agy` 有账号级运行时模型发现，但没有 API catalog 路由候选） |
+| `executor_cli` | 被调度的外部 CLI 进程；支持清单与验证状态以 `references/supported-agents.yml` 为准，不在 Markdown 重复维护 |
 | `requested_model` | 本次调用要求使用的模型标识（可以是别名，见 `scripts/catalog_lib.py::find_model` 的宽松匹配规则） |
 | `actual_model` | 执行器实际使用的模型标识；只有执行器自己在输出里回显时才能拿到，拿不到就是 `null`，不得编造 |
 | `requested_reasoning_effort` | 请求的推理深度/强度参数（不同执行器命名不同） |
@@ -85,7 +85,8 @@
 1. **requested vs actual**：每次调用后比对 `requested_model` 与 `actual_model`。
 2. **降级判定**：
    - `codex`：stdout 头部若有 `model: xxx` 行，与 `requested_model` 不一致时，状态标记为 `fallback_or_downgrade`（`scripts/run_matrix.py::detect_actual_model` 已实现，只扫描 stdout 前 2000 字符内的 `model:` 行）。
-   - `claude`：**P4（2026-07-10）更新**——纯文本模式（`cmd_template` 不含 `--output-format json`）下 headless 输出仍然**没有**可靠的模型回显机制，任何成功调用一律标记 `actual_model_unverified`，**不允许**因为"看起来跑成功了"就报告为 `passed`。但当 `cmd_template` 显式带 `--output-format json`（或 `--output-format=json`）时，`scripts/run_matrix.py::detect_actual_model` 会解析 stdout JSON 的 `modelUsage`（键名即模型 id）或顶层 `model` 字段作为 `actual_model`，与 `requested_model` 比对后可以正常判定 `passed` / `fallback_or_downgrade`，不再一律 `actual_model_unverified`。比对前会先剥离两种已在真实 CLI（2.1.206，2026-07-10 实测验证，非猜测）上观察到的修饰后缀：不带 `--model` 时回显可能带方括号执行模式后缀（如 `claude-opus-4-8[1m]`）；用短别名（如 `haiku`）请求时回显可能带日期后缀（如 `claude-haiku-4-5-20251001`）；显式传完整 catalog `model_id`（如 `claude-haiku-4-5`）时回显通常精确匹配、无后缀。stdout 不是合法 JSON 时仍然回退到 `actual_model_unverified`，不假装已验证。细节与原始验证 payload 见 `references/benchmark-2026-07-10.md`。
+   - `claude`：**P4（2026-07-10）更新**——纯文本模式（`cmd_template` 不含 `--output-format json`）下 headless 输出仍然**没有**可靠的模型回显机制，任何成功调用一律标记 `actual_model_unverified`，**不允许**因为"看起来跑成功了"就报告为 `passed`。但当 `cmd_template` 显式带 `--output-format json`（或 `--output-format=json`）时，`scripts/run_matrix.py::detect_actual_model` 会解析 stdout JSON 的 `modelUsage`（键名即模型 id）或顶层 `model` 字段作为 `actual_model`，与 `requested_model` 比对后可以正常判定 `passed` / `fallback_or_downgrade`，不再一律 `actual_model_unverified`。比对前会先剥离两种已在真实 CLI（2.1.206，2026-07-10 实测验证，非猜测）上观察到的修饰后缀：不带 `--model` 时回显可能带方括号执行模式后缀（如 `claude-opus-4-8[1m]`）；用短别名（如 `haiku`）请求时回显可能带日期后缀（如 `claude-haiku-4-5-20251001`）；显式传完整 catalog `model_id`（如 `claude-haiku-4-5`）时回显通常精确匹配、无后缀。stdout 不是合法 JSON 时仍然回退到 `actual_model_unverified`，不假装已验证。细节与原始验证 payload 见 `reports/benchmark-2026-07-10.md`。
+   - `pi`：调用必须使用 `--mode json`。`scripts/run_matrix.py` 从最终 assistant `message_end` 读取 `message.model` 和结构化 `usage`；模型叶子名与请求不一致时标记 `fallback_or_downgrade`，缺少 JSONL 模型证据时标记 `actual_model_unverified`。2026-08-04 已用 Pi 0.83.0 + `deepseek-v4-flash@low` 实测，边界见 `references/pi-cli.md`。
    - 其他执行器（agy/gemini/kimi/opencode/qwen）：Phase 1 未实现模型回显检测，`notes` 会如实写明"model-echo verification is not implemented for this executor"，不假装已覆盖。
 3. **宿主模型变化**：`host_ai` 自身运行在哪个底层模型上，属于**仅可观测、不可控**的信息——本技能不能对宿主自己的模型完整性做强制门禁。如果宿主环境暴露了自身模型标识，记录下来即可；拿不到就写 `unknown`，不要推断。
 4. **能力限制声明**：任何一次 Model Integrity Gate 判定为 `actual_model_unverified` 或 `fallback_or_downgrade` 的调用，最终回执必须包含这次判定，不能只在内部日志里留痕、对客户只报"完成"。
@@ -98,29 +99,29 @@
 **Manifest 位置**（遵循 `SKILL_SPEC.md`「脚本写盘决策规则」B 类——可追溯、记录状态变化的审计记录，不是一次性临时文件）：
 
 ```text
-${XDG_STATE_HOME:-~/.local/state}/soia-dev-agent-cli-dispatch/runs/<run_id>/manifest.json
+${SOIA_SKILLS_STATE_HOME:-<user-state>}/soia-skills/soia-dev-agent-cli-dispatch/runs/<run_id>/manifest.json
 ```
 
 **首次运行：**
 
 ```bash
-python3 scripts/run_matrix.py --cases cases.json --run-id <run_id> \
-  --manifest-dir "${XDG_STATE_HOME:-$HOME/.local/state}/soia-dev-agent-cli-dispatch/runs/<run_id>"
+python3 scripts/run_matrix.py --cases <cases.json> --run-id <run_id>
 ```
 
 **断点续跑**（进程被杀、额度耗尽、或手动中断后）：
 
 ```bash
-python3 scripts/run_matrix.py --cases cases.json --run-id <run_id> \
-  --manifest-dir "${XDG_STATE_HOME:-$HOME/.local/state}/soia-dev-agent-cli-dispatch/runs/<run_id>" \
-  --resume
+python3 scripts/run_matrix.py --cases <cases.json> --run-id <run_id> --resume
 ```
 
-manifest 里的 `resume_command` 字段会给出这条命令的现成版本，直接复制运行即可。
+自定义目录时，两次调用都传同一个 `--manifest-dir <user-state-run-dir>`。manifest
+中的 `resume_command` 只保存脱敏命令骨架，私有 cases/state 路径需要调用方重新提供。
 
 行为约定：
 
 - 每个 case 跑完后立即原子写 manifest（临时文件 + `os.replace`），中途被杀不会破坏 manifest 文件本身。
+- `run_id` 只允许字母、数字、点、下划线和连字符，防止路径穿越。
+- 默认最多保留 50 个 run；达到上限时阻断新 run，不自动删除。客户检查并授权清理后才能释放名额。
 - 某个 provider 的某个 case 命中 `blocked_quota` 后，同一 provider 剩余的 case 立即标记 `pending_quota`（不再实际执行子进程），其他 provider 的 case 不受影响、按串行顺序继续跑。
 - `--resume` 时，已是终态（`passed` / `unsupported` / `blocked_paid_api` / `fallback_or_downgrade` / `actual_model_unverified`）的 case 直接跳过；残留 `running`（上次进程被杀留下的）会先标记 `interrupted`（证据保留在该 case 记录的 `previous_attempt` 字段里，不丢弃），再重新尝试一次。
 - `--resume` 时会重新探测本批次涉及执行器的 CLI 版本，和上次 manifest 里记录的版本不一致会打印警告（结果可能不可比较，但不会阻止运行）。
@@ -176,34 +177,16 @@ Token 与费用：
 
 若确需读取，必须只读，不在其中生成代码或临时文件。
 
-## ⚡ Anti-Fake-Fix Gate（强制收尾验证）
+## Anti-Fake-Fix Gate
 
-**每次外部 CLI/agent job 完成后，无论 exit code 是否为 0，必须执行以下三步才算"修复有效"：**
+外部 Agent 自报“完成”和退出码 0 都只是待验证输入。主控按任务风险独立验收：
 
-```
-步骤 1 — diff 实证
-git diff --stat HEAD~1..HEAD   # 或 git diff --stat（如未 commit）
-→ 若 diff 为空 = 没有修复，声明"虚报"，不接受本次产出
+1. 对写任务检查真实 diff/产物，并确认只触及授权范围；只读任务不以“diff 为空”判失败。
+2. 运行目标仓规定的最窄相关测试、构建、lint 或内容校验；不固定要求所有任务重复三次。
+3. 只有发现不稳定迹象时才重复运行，并把 flaky 作为问题报告，不能标记忽略后继续宣布完成。
+4. 组合命令使用 fail-fast 或逐条核对退出码，防止最后一条成功掩盖前序失败。
+5. 测试通过后再从另一条路径复核最脆弱假设，例如检查下游消费者、边界输入或生成物内容。
 
-步骤 2 — 编译闸门
-<项目对应的编译/类型检查命令，如 cargo check --workspace / tsc --noEmit / go build ./...>
-→ 必须 0 errors
-
-步骤 3 — 测试三次（证明非 flaky）
-<项目对应的测试命令> × 3     # 3 次全绿才算 PASS
-→ 若某次 FAILED，分析根因，修复后重跑 3 次
-```
-
-**处置规则**：
-| 情况 | 处置 |
-|------|------|
-| diff 非空 + 编译通过 + 测试 3/3 PASS | ✅ 修复有效，可标记完成 |
-| diff 为空（exit 0 但无实际改动） | ❌ 虚报，记录到你自己的问题追踪，重新派发或降级到更可靠的执行器自行修 |
-| 编译失败 | ❌ 修复引入新错误，保持进行中状态，分析错误再修 |
-| 测试 3 次中有 FAILED | 分析是 flaky 还是回归：flaky（不稳定路径）→ 标记忽略；回归 → 修复 |
-
-**通用教训**：收到 job“完成”通知后，第一件事是跑 `git diff --stat` 核实是否真的有改动，不是先读 job 输出文字——exit code 为 0 不代表产出了预期变更，也可能只改了非目标文件，必须实测核对。
-
-**组合验收防假绿（2026-07-11 实测）**：同一 shell 中连续跑多条检查时，必须使用 `set -e`（需要管道时用 `set -euo pipefail`）或逐条保存并核对退出码。否则前面的 unit test 失败可能被最后一条成功命令覆盖，整个组合命令仍返回 0；此类结果一律作废并按 fail-fast 方式重跑。
+没有任务质量证据时，最多报告“外部调用完成”，不能报告“任务完成”。
 
 ---

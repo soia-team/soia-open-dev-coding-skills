@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # @created_by unknown
 # @created_at unknown
-# @modified_by openai/gpt-5
-# @modified_at 2026-07-11 12:00:00
-# @version 0.2.2
-# @description Run resumable external AI dispatch matrices with usage and integrity evidence.
-# @changelog Assert that Antigravity preflight stays version-only with unavailable usage/model evidence.
+# @modified_by openai/gpt-5.6-sol
+# @modified_at 2026-08-04 14:05:00
+# @version 0.5.0
+# @description Run resumable external AI dispatch matrices with usage, integrity evidence, and user-owned state storage.
+# @changelog Enforce safe run ids and block new runs when the configured retained-run limit is reached.
 """Resumable, strictly-serial executor for a model/executor dispatch matrix.
 
 Phase 1 scope: this script is built and self-tested against mock commands
@@ -15,8 +15,8 @@ order given) because interleaved provider CLIs make quota/downgrade
 attribution ambiguous.
 
 Usage:
-    python3 run_matrix.py --cases cases.json --run-id my-run --manifest-dir /path/to/dir
-    python3 run_matrix.py --cases cases.json --run-id my-run --manifest-dir /path/to/dir --resume
+    python3 run_matrix.py --cases cases.json --run-id my-run
+    python3 run_matrix.py --cases cases.json --run-id my-run --manifest-dir <user-state-dir> --resume
     python3 run_matrix.py --selftest
 
 cases.json shape (array):
@@ -25,9 +25,10 @@ cases.json shape (array):
       "cmd_template": "codex exec ..."}, ...]
 
 Manifest is written atomically to
-    <manifest-dir>/manifest.json
-after every single case (spec requirement), so a killed run can always be
-inspected and resumed from the last completed case.
+    <state>/soia-skills/soia-dev-agent-cli-dispatch/runs/<run-id>/manifest.json
+by default, or to an explicit --manifest-dir, after every single case (spec
+requirement). It contains redacted status/usage/model fields only; a killed
+run can be inspected and resumed without writing raw prompt or response text.
 """
 
 from __future__ import annotations
@@ -48,6 +49,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import catalog_lib  # noqa: E402
 import estimate_cost  # noqa: E402
+import resolve_storage  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -101,7 +103,7 @@ CODEX_TOKENS_USED_RE = re.compile(r"tokens used", re.IGNORECASE)
 # back to actual_model_unverified -- see detect_actual_model() below.
 CLAUDE_OUTPUT_FORMAT_JSON_RE = re.compile(r"--output-format[=\s]+json\b", re.IGNORECASE)
 # Two decoration patterns confirmed against a live `claude` 2.1.206 CLI on
-# 2026-07-10 (see references/benchmark-2026-07-10.md for the raw payloads):
+# 2026-07-10 (see reports/benchmark-2026-07-10.md for the raw payloads):
 #   - no --model flag (session/account default): modelUsage key came back
 #     bracketed, e.g. "claude-opus-4-8[1m]" (most likely a 1M-context-window
 #     execution-mode annotation).
@@ -119,6 +121,7 @@ VERSION_COMMANDS = {
     "opencode": ["opencode", "--version"],
     "qwen": ["qwen", "--version"],
     "pi": ["pi", "--version"],
+    "deepcode": ["deepcode", "--version"],
 }
 
 DEFAULT_TIMEOUT_SECONDS = 600
@@ -131,6 +134,24 @@ def now_iso() -> str:
 # ---------------------------------------------------------------------------
 # Token / model-echo parsing
 # ---------------------------------------------------------------------------
+
+
+def _pi_assistant_message_end(stdout: str) -> dict[str, Any] | None:
+    """Return Pi's final structured assistant message from --mode json JSONL."""
+    result = None
+    for line in stdout.splitlines():
+        try:
+            event = json.loads(line)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        message = event.get("message") if isinstance(event, dict) else None
+        if (
+            event.get("type") == "message_end"
+            and isinstance(message, dict)
+            and message.get("role") == "assistant"
+        ):
+            result = message
+    return result
 
 
 def parse_usage(executor: str, stdout: str) -> dict[str, Any]:
@@ -187,6 +208,29 @@ def parse_usage(executor: str, stdout: str) -> dict[str, Any]:
             total = int(match.group(1).replace(",", ""))
             return {**empty, "total_tokens": total, "usage_status": "partial", "usage_source": "claude_text_total"}
         return empty
+    if executor == "pi":
+        message = _pi_assistant_message_end(stdout)
+        usage = message.get("usage") if isinstance(message, dict) else None
+        if isinstance(usage, dict):
+            fields = {
+                "input_tokens": usage.get("input"),
+                "cached_input_tokens": usage.get("cacheRead"),
+                "cache_write_tokens": usage.get("cacheWrite"),
+                "output_tokens": usage.get("output"),
+                "total_tokens": usage.get("totalTokens"),
+            }
+            if all(isinstance(value, int) and not isinstance(value, bool) for value in fields.values()):
+                cost = usage.get("cost")
+                reported = cost.get("total") if isinstance(cost, dict) else None
+                if not isinstance(reported, (int, float)) or isinstance(reported, bool):
+                    reported = None
+                return {
+                    **fields,
+                    "usage_status": "measured",
+                    "usage_source": "pi_jsonl_message_end_usage",
+                    "provider_reported_cost_usd": reported,
+                }
+        return empty
     # gemini/kimi/opencode/qwen: no confirmed parsing rule in Phase 1 scope.
     return empty
 
@@ -203,7 +247,7 @@ def _normalize_claude_model_id(value: str) -> str:
     model_id/requested_model string.
 
     Verified directly against a live `claude` 2.1.206 CLI on 2026-07-10 (not
-    guessed -- see references/benchmark-2026-07-10.md for the raw payloads):
+    guessed -- see reports/benchmark-2026-07-10.md for the raw payloads):
     a bracketed execution-mode suffix (e.g. "[1m]") and/or a trailing 8-digit
     date suffix (e.g. "-20251001") may appear depending on how --model was
     (or was not) specified; requesting the full catalog model_id directly
@@ -286,6 +330,10 @@ def detect_actual_model(executor: str, stdout: str, cmd: str | None = None) -> s
         except (json.JSONDecodeError, ValueError):
             return None
         return _extract_claude_model_from_json(payload)
+    if executor == "pi":
+        message = _pi_assistant_message_end(stdout)
+        model = message.get("model") if isinstance(message, dict) else None
+        return model if isinstance(model, str) and model else None
     return None
 
 
@@ -313,21 +361,31 @@ def probe_cli_version(executor: str) -> str:
 
 def atomic_write_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        path.parent.chmod(0o700)
+    except OSError:
+        pass
     fd, tmp_name = tempfile.mkstemp(dir=str(path.parent), prefix=".manifest-", suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             json.dump(data, handle, ensure_ascii=False, indent=2)
             handle.write("\n")
         os.replace(tmp_name, path)
+        try:
+            path.chmod(0o600)
+        except OSError:
+            pass
     finally:
         if os.path.exists(tmp_name):
             os.remove(tmp_name)
 
 
 def build_resume_command(cases_path: Path, run_id: str, manifest_dir: Path) -> str:
+    # Keep private case/state paths out of the persisted manifest. The caller
+    # can reconstruct them from its original invocation or configured roots.
     return (
-        f"python3 {Path(__file__).name} --cases {cases_path} --run-id {run_id} "
-        f"--manifest-dir {manifest_dir} --resume"
+        f"python3 {Path(__file__).name} --cases <cases.json> --run-id {run_id} "
+        "--resume  # reuse the same --manifest-dir or configured state root"
     )
 
 
@@ -470,9 +528,29 @@ def run_one_case(
                     "status is intentionally not reported as a clean pass (Model Integrity Gate). "
                     "Re-run with --output-format json for a verifiable modelUsage/model echo."
                 )
+        elif executor == "pi":
+            requested_leaf = model.rsplit("/", 1)[-1] if isinstance(model, str) else None
+            if actual_model and requested_leaf:
+                if actual_model == requested_leaf:
+                    record["status"] = "passed"
+                    record["notes"].append(
+                        f"pi --mode json echoed message.model={actual_model!r}; "
+                        f"matches requested {model!r}"
+                    )
+                else:
+                    record["status"] = "fallback_or_downgrade"
+                    record["notes"].append(
+                        f"pi echoed model={actual_model!r} via --mode json, requested {model!r}"
+                    )
+            else:
+                record["status"] = "actual_model_unverified"
+                record["notes"].append(
+                    "pi text mode does not provide structured model evidence; re-run with "
+                    "--mode json and retain the message_end event."
+                )
         else:
             record["status"] = "passed"
-            if executor not in ("codex", "claude"):
+            if executor not in ("codex", "claude", "pi"):
                 record["notes"].append(
                     f"model-echo verification is not implemented for executor={executor!r} in Phase 1"
                 )
@@ -502,6 +580,11 @@ def run_matrix(
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     catalog_data: dict | None = None,
 ) -> dict[str, Any]:
+    manifest_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        manifest_dir.chmod(0o700)
+    except OSError:
+        pass
     manifest_path = manifest_dir / "manifest.json"
     existing = load_manifest(manifest_path) if resume else None
 
@@ -528,7 +611,7 @@ def run_matrix(
         "started_at": existing["started_at"] if existing else now_iso(),
         "updated_at": now_iso(),
         "host_ai": host_ai,
-        "skill_source_path": skill_source_path,
+        "skill_name": "soia-dev-agent-cli-dispatch",
         "cli_versions": cli_versions,
         "pricing_version": (catalog_data or {}).get("updated_at"),
         "expected_cases": len(cases),
@@ -539,6 +622,8 @@ def run_matrix(
         "stop_reason": None,
         "cases": [],
         "resume_command": build_resume_command(cases_path, run_id, manifest_dir),
+        "manifest_storage": "configured_run_directory",
+        "manifest_path": "<configured-run-directory>/manifest.json",
     }
 
     # A fresh invocation starts with no provider blocked. On --resume this lets
@@ -876,7 +961,7 @@ def run_selftest() -> int:
         # instead of always reporting actual_model_unverified. The mock
         # stdout payloads below mirror the real shape captured from a live
         # `claude` 2.1.206 CLI on 2026-07-10 (see
-        # references/benchmark-2026-07-10.md), including the two decoration
+        # reports/benchmark-2026-07-10.md), including the two decoration
         # patterns actually observed there: a bracketed mode suffix and a
         # dated model id.
         claude_json_dir = tmp_path / "manifest-claude-json"
@@ -999,7 +1084,100 @@ def run_selftest() -> int:
             claude_by_id["claude-text-mode-still-unverified"]["status"],
         )
 
-        # --- Non-codex/non-claude executor gets an honest "not implemented" note, not a fabricated pass.
+        # --- Pi runtime support: --mode json JSONL carries both served-model
+        # and structured usage evidence. Text mode must remain unverified.
+        pi_json_dir = tmp_path / "manifest-pi-json"
+        pi_json_cases_path = tmp_path / "cases-pi-json.json"
+        pi_message = {
+            "type": "message_end",
+            "message": {
+                "role": "assistant",
+                "provider": "deepseek",
+                "model": "deepseek-v4-flash",
+                "content": [{"type": "text", "text": "ok"}],
+                "usage": {
+                    "input": 105,
+                    "output": 61,
+                    "cacheRead": 384,
+                    "cacheWrite": 0,
+                    "reasoning": 56,
+                    "totalTokens": 550,
+                    "cost": {"input": 0.0000147, "output": 0.00001708, "cacheRead": 0.0000010752, "cacheWrite": 0, "total": 0.0000328552},
+                },
+            },
+        }
+        pi_mismatch = json.loads(json.dumps(pi_message))
+        pi_mismatch["message"]["model"] = "deepseek-v4-pro"
+        pi_json_cases = [
+            {
+                "case_id": "pi-json-verified",
+                "provider": "deepseek",
+                "executor": "pi",
+                "model": "deepseek/deepseek-v4-flash",
+                "reasoning": "low",
+                "cmd_template": f"printf '%s\\n' '{json.dumps(pi_message)}' # pi -p --mode json",
+            },
+            {
+                "case_id": "pi-json-mismatch",
+                "provider": "deepseek",
+                "executor": "pi",
+                "model": "deepseek-v4-flash",
+                "reasoning": "low",
+                "cmd_template": f"printf '%s\\n' '{json.dumps(pi_mismatch)}' # pi -p --mode json",
+            },
+            {
+                "case_id": "pi-text-unverified",
+                "provider": "deepseek",
+                "executor": "pi",
+                "model": "deepseek-v4-flash",
+                "reasoning": "low",
+                "cmd_template": "printf 'ok\\n' # pi -p text mode",
+            },
+        ]
+        pi_json_cases_path.write_text(json.dumps(pi_json_cases), encoding="utf-8")
+        pi_manifest = run_matrix(
+            cases=pi_json_cases,
+            run_id="selftest-pi-json",
+            manifest_dir=pi_json_dir,
+            cases_path=pi_json_cases_path,
+            resume=False,
+            host_ai="selftest-host",
+            skill_source_path=str(Path(__file__).resolve().parents[1]),
+            timeout_seconds=30,
+            catalog_data=selftest_catalog_data,
+        )
+        pi_by_id = {c["case_id"]: c for c in pi_manifest["cases"]}
+        verified_pi = pi_by_id["pi-json-verified"]
+        check("pi json exact model -> passed", verified_pi["status"] == "passed", verified_pi["status"])
+        check("pi json actual model captured", verified_pi["actual_model"] == "deepseek-v4-flash", str(verified_pi["actual_model"]))
+        check(
+            "pi json usage fields measured without collapsing cache tokens",
+            verified_pi["input_tokens"] == 105
+            and verified_pi["cached_input_tokens"] == 384
+            and verified_pi["cache_write_tokens"] == 0
+            and verified_pi["output_tokens"] == 61
+            and verified_pi["total_tokens"] == 550
+            and verified_pi["usage_status"] == "measured",
+            str({key: verified_pi[key] for key in ("input_tokens", "cached_input_tokens", "cache_write_tokens", "output_tokens", "total_tokens", "usage_status")}),
+        )
+        check(
+            "pi json provider-reported cost captured",
+            verified_pi["provider_reported_cost_usd"] == 0.0000328552,
+            str(verified_pi["provider_reported_cost_usd"]),
+        )
+        check(
+            "pi json model mismatch -> fallback_or_downgrade",
+            pi_by_id["pi-json-mismatch"]["status"] == "fallback_or_downgrade",
+            pi_by_id["pi-json-mismatch"]["status"],
+        )
+        check(
+            "pi text mode -> actual_model_unverified",
+            pi_by_id["pi-text-unverified"]["status"] == "actual_model_unverified",
+            pi_by_id["pi-text-unverified"]["status"],
+        )
+
+        # --- Non-codex/non-claude/non-pi executor gets an honest
+        # "not implemented" note, not a fabricated pass.
         check(
             "unsupported-detection: unrelated executor still reaches a status",
             manifest3["cases"][0]["status"] in ALL_STATUSES,
@@ -1039,6 +1217,18 @@ def run_selftest() -> int:
         str(detailed_usage),
     )
     check("parse_tokens: unknown executor returns None", parse_tokens("gemini", "tokens used\n42") is None)
+    pi_helper_payload = json.dumps(
+        {
+            "type": "message_end",
+            "message": {
+                "role": "assistant",
+                "model": "deepseek-v4-flash",
+                "usage": {"input": 2, "output": 3, "cacheRead": 5, "cacheWrite": 7, "totalTokens": 17, "cost": {"total": 0.01}},
+            },
+        }
+    )
+    check("parse_tokens: pi JSONL total", parse_tokens("pi", pi_helper_payload) == 17)
+    check("detect_actual_model: pi JSONL message.model", detect_actual_model("pi", pi_helper_payload) == "deepseek-v4-flash")
     check(
         "agy preflight command is version-only and never sends a prompt",
         VERSION_COMMANDS.get("agy") == ["agy", "--version"],
@@ -1128,12 +1318,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--cases", help="Path to a cases.json file.")
     parser.add_argument("--run-id", help="Stable identifier for this run; reused across --resume calls.")
-    parser.add_argument("--manifest-dir", help="Directory to hold manifest.json for this run.")
-    parser.add_argument("--resume", action="store_true", help="Resume a previous run in the same --manifest-dir.")
+    parser.add_argument(
+        "--manifest-dir",
+        help="Override the user-state run directory; default is <state>/soia-skills/soia-dev-agent-cli-dispatch/runs/<run-id>.",
+    )
+    parser.add_argument("--config", help="Optional private config.yml; default follows SOIA_DEV_AGENT_CLI_DISPATCH_CONFIG_FILE.")
+    parser.add_argument("--resume", action="store_true", help="Resume a previous run in the same configured or explicit state directory.")
     parser.add_argument(
         "--host-ai",
-        default=os.environ.get("SOIA_HOST_AI", "unknown"),
-        help="Identifier for the orchestrating AI/session, recorded in the manifest. Defaults to $SOIA_HOST_AI or 'unknown'.",
+        default=None,
+        help="Identifier for the orchestrating AI/session. CLI value overrides config and $SOIA_HOST_AI.",
     )
     parser.add_argument("--timeout-seconds", type=int, default=DEFAULT_TIMEOUT_SECONDS)
     parser.add_argument("--catalog", help="Override path to model-catalog.yml for api_equivalent_cost estimates.")
@@ -1143,8 +1337,15 @@ def main() -> int:
     if args.selftest:
         return run_selftest()
 
-    if not (args.cases and args.run_id and args.manifest_dir):
-        parser.error("--cases, --run-id, and --manifest-dir are required unless --selftest is used")
+    if not (args.cases and args.run_id):
+        parser.error("--cases and --run-id are required unless --selftest is used")
+
+    config_path = Path(args.config).expanduser() if args.config else resolve_storage.default_config_path()
+    try:
+        config = resolve_storage.load_config(config_path)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
 
     cases_path = Path(args.cases)
     try:
@@ -1165,13 +1366,29 @@ def main() -> int:
         except catalog_lib.CatalogError as exc:
             print(f"WARN: failed to load catalog for cost estimates: {exc}", file=sys.stderr)
 
+    config_values = resolve_storage.effective_env(config)
+    host_ai = args.host_ai or config_values.get("SOIA_HOST_AI") or "unknown"
+    try:
+        manifest_dir = resolve_storage.resolve_manifest_dir(
+            args.run_id,
+            explicit=args.manifest_dir,
+            config=config,
+        )
+        resolve_storage.ensure_run_capacity(
+            manifest_dir.parent,
+            manifest_dir.name,
+            resolve_storage.retained_run_limit(config),
+        )
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     manifest = run_matrix(
         cases=cases,
         run_id=args.run_id,
-        manifest_dir=Path(args.manifest_dir),
+        manifest_dir=manifest_dir,
         cases_path=cases_path,
         resume=args.resume,
-        host_ai=args.host_ai,
+        host_ai=host_ai,
         skill_source_path=str(skill_root),
         timeout_seconds=args.timeout_seconds,
         catalog_data=catalog_data,

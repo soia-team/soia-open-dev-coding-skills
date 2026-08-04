@@ -7,7 +7,7 @@ version: 1
 
 paths:
   workspace_env: YOUR_SKILL_WORKSPACE
-  output_root: outputs/your-skill-name
+  output_root: "<customer-output-dir>"
 
 defaults:
   provider: auto
@@ -24,7 +24,7 @@ providers:
     auth_check: <safe-readonly-auth-check>
 
 credentials:
-  policy: env_or_provider_login
+  policy: provider_login_or_os_keychain
   variables: []
 
 env:
