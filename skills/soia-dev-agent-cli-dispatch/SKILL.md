@@ -3,9 +3,9 @@ name: soia-dev-agent-cli-dispatch
 description: 外部 AI CLI 调度与模型路由，支持受控派活与用量回执。触发：「派活给外部 AI」「调用 agy」「多 CLI 派发」
 dependencies:
   optional: [soia-meta-sync-skills]
-version: 1.2.2
+version: 1.2.3
 created_at: 2026-07-10 11:28:32
-updated_at: 2026-08-04 11:43:03
+updated_at: 2026-08-04 12:08:00
 created_by: claude opus 4.6
 updated_by: gpt-5.6-sol
 ---
@@ -27,7 +27,7 @@ command with no orchestration, monitoring, or prompt-injection concerns.
 
 ### 这个技能可以做什么
 
-调度外部 AI 模型/CLI（codex/claude/agy/gemini/kimi/opencode/qwen/pi，非宿主内置子代理，`qodercli` 也有命令模板但未纳入下方精简清单）进行受控派发，覆盖编码、审查、分析、研究、文档和内容任务：任务边界拆分、独立 workdir、防注入 prompt 写法、模型分级矩阵、Worktree 审批门、Anti-Fake-Fix 三步验证。在此之上，可显式指定执行器 + 模型 + 推理深度，或只给执行器家族由任务难度自动选型（见「自动路由」）；每次调用后输出 Token/费用汇总（见「调用总结回执」）、模型完整性检测（见「Model Integrity Gate」）、额度预检（见「额度预检」）与断点续跑（见「可恢复执行」）。各执行器详细命令模板在 `references/` 子目录下按需加载。
+调度外部 AI 模型/CLI（codex/claude/agy/gemini/kimi/opencode/qwen/pi/deepcode，非宿主内置子代理，`qodercli` 也有命令模板但未纳入下方精简清单）进行受控派发，覆盖编码、审查、分析、研究、文档和内容任务：任务边界拆分、独立 workdir、防注入 prompt 写法、模型分级矩阵、Worktree 审批门、Anti-Fake-Fix 三步验证。在此之上，可显式指定执行器 + 模型 + 推理深度，或只给执行器家族由任务难度自动选型（见「自动路由」）；每次调用后输出 Token/费用汇总（见「调用总结回执」）、模型完整性检测（见「Model Integrity Gate」）、额度预检（见「额度预检」）与断点续跑（见「可恢复执行」）。各执行器详细命令模板在 `references/` 子目录下按需加载。
 
 | 客户想要 | 技能会做 | 客户能看到 |
 |---|---|---|
@@ -76,16 +76,17 @@ python3 ~/.agents/skills/soia-meta-sync-skills/scripts/sync_soia_skills.py \
 SOIA_DEV_AGENT_CLI_DISPATCH_CONFIG_FILE=<custom-config-path>
 ```
 
-- 本技能默认不需要创建 `config.yml`：执行器的认证、套餐和 provider 登录态由各 CLI 自己管理；不要把它们复制到本技能配置。
-- 如果编排层需要 API key、cookie、session、provider home 或本机路径，只能放进私有 `config.yml`、进程环境或 provider 自己的登录态里，不能写进仓库、vault 正文或日志。
+- 本技能不需要凭据配置，但支持可选私有 `config.yml`，模板见 `config.example.yml`；它只配置 host 标识和 state/temp 根目录。
+- 执行器的认证、套餐和 provider 登录态由各 CLI 自己管理；例如 DeepCode 使用 `~/.deepcode/settings.json`，不要把凭据复制到本技能配置。
+- 配置优先级：本次 CLI 参数 → 进程环境 → 私有 `config.yml` → 跨平台安全默认值。
 - 第三方 skill 只能声明依赖和安装方式，不直接修改第三方 skill 文件。
 - 本技能不硬绑定任何具体编排系统；文中出现的“你的编排层”指调用本技能的上层 Agent/系统，不是某个特定产品。
 
 ### 私密信息与中间数据
 
-- API key、cookie、session、provider home 与本机路径只进入私有 `~/.config/soia-skills/soia-dev-agent-cli-dispatch/config.yml`、进程环境或 provider 登录态，不写入仓库、vault 正文或日志。
-- 派发 prompt 属于可追溯运行产物：一次性派发写入 `${TMPDIR:-/tmp}/soia-dev-agent-cli-dispatch/<task-id>/prompt.txt`（用完清理）；需要跨会话审计时改用 `${XDG_STATE_HOME:-~/.local/state}/soia-dev-agent-cli-dispatch/`（见 `DATA_STORAGE_SPEC.md` B 类）。
-- `run_matrix.py` manifest 记录脱敏字段（状态、token、成本、模型回显），不保存命令输出正文与 prompt 内容。
+- API key、cookie、session、provider home 与本机路径只进入 provider 登录态、进程环境或私有 `config.yml` 的非秘密路径字段，不写入仓库、vault 正文或日志。
+- 一次性 prompt 写入 OS 临时目录下按 task-id 隔离的目录；需要保留时由调用方显式设置 `SOIA_DISPATCH_TEMP_DIR`，默认不把 prompt 当审计资料长期保存。
+- `run_matrix.py` 默认把脱敏 manifest 原子写入用户 state：`<state>/soia-skills/soia-dev-agent-cli-dispatch/runs/<run-id>/manifest.json`；目录 `0700`、文件 `0600`（平台允许时）。不保存命令输出正文、prompt 内容或私有绝对路径。
 - 回执与日志不得输出凭据、账号标识、私有路径或响应正文。
 
 ### 日志与完成回执
@@ -173,7 +174,7 @@ Standard/Enterprise、Gemini API Key 和 Vertex AI 通道仍保留在 `gemini`
 
 ## 执行器派发与推荐组合（按需加载）
 
-完整派发决策树、快速查表、推荐组合与自动路由判据见 `references/executor-routing.md`；支持的工作类型、客户端、用法和验证状态以 `references/dispatch-capabilities.yml` 为准。每次派发前先核对实际支持状态，再选择执行器。
+完整派发决策树、快速查表、推荐组合与自动路由判据见 `references/executor-routing.md`；支持的工作类型、AI agent、用法和验证状态以 `supported-agents.yml` 为准。每次派发前先核对实际支持状态，再选择执行器。
 
 自动路由与显式指定的裁决：`scripts/route_model.py` 输出 `selected_model`、`selected_reasoning_effort`、`task_complexity`、`selection_reason`、`estimated_cost_range`、`catalog_version` 与 `selection_status`；没有 verified candidate 时返回阻断状态，不得从 `pending_benchmark` 候选中静默挑一个。
 
@@ -320,9 +321,11 @@ pi -p --mode json --no-session \
 | Gemini CLI 执行规范 | `references/gemini-cli.md` | 派发给 gemini 时 |
 | Kimi CLI 执行规范 | `references/kimi-cli.md` | 派发给 kimi 时 |
 | qodercli 执行规范 | `references/qodercli.md` | 派发给 qodercli 时 |
+| DeepCode CLI 执行规范 | `references/deepcode.md` | 显式派发给 deepcode 时 |
 | Pi (pi-coding-agent) 执行规范 | `references/pi.md` | 派发给 pi 时 |
 | 执行器派发与推荐组合 | `references/executor-routing.md` | 需要决策树/快速查表/自动路由判据/推荐组合时 |
-| 调度能力与使用配置（YAML） | `references/dispatch-capabilities.yml` | 查看支持的工作类型、客户端、用法、自动路由和验证状态时 |
+| 支持 AI agent 与使用配置（YAML） | `supported-agents.yml` | 查看支持的工作类型、AI agent、命令用法、自动路由和验证状态时 |
+| 私有运行配置模板 | `config.example.yml` | 配置 host 标识、state/temp 根目录时；不放凭据 |
 | OpenCode + Qwen 执行规范 | `references/opencode-qwen.md` | 派发给 opencode/qwen 时 |
 | 代码文件元数据头规范 | `references/metadata-header.md` | 任何代码写入前 |
 | 模型价格资料原文（2026-07-10 快照） | `references/model-pricing-2026-07-10.md` | 需要人工核对官方定价、或价格资料更新时 |
@@ -343,8 +346,9 @@ pi -p --mode json --no-session \
 |------|------|----------|
 | `scripts/catalog_lib.py` | 受限 YAML 子集解析器 + `model-catalog.yml` schema 校验（重复 model_id / 缺字段 / 负价拒绝，未知 reasoning level 标记为 WARN） | `python3 scripts/catalog_lib.py --selftest` |
 | `scripts/estimate_cost.py` | 给定 model + token 数，输出 API 等价费用估算（分项 + 总额 + `confidence`），未知模型给出近似候选并以 exit code 2 退出 | `python3 scripts/estimate_cost.py --selftest` |
-| `scripts/run_matrix.py` | 可恢复的串行派发矩阵执行器；支持 Codex、Claude 与 Pi 的模型完整性证据，其中 Pi 解析 `--mode json` JSONL | `python3 scripts/run_matrix.py --selftest` |
-| `scripts/validate_dispatch_capabilities.py` | 校验调度能力 YAML 的技能、工作流、执行器、字段和 reference 路径，防止支持矩阵漂移 | `python3 scripts/validate_dispatch_capabilities.py --selftest` |
+| `scripts/run_matrix.py` | 可恢复的串行派发矩阵执行器；支持 Codex、Claude 与 Pi 的模型完整性证据，其中 Pi 解析 `--mode json` JSONL；默认写用户 state manifest | `python3 scripts/run_matrix.py --selftest` |
+| `scripts/resolve_storage.py` | 读取可选私有 config.yml，解析跨平台 config/state/temp 路径和默认 run 目录 | `python3 scripts/resolve_storage.py --selftest` |
+| `scripts/validate_dispatch_capabilities.py` | 校验支持 AI agent YAML 的技能、工作流、agent、字段和 reference 路径，防止支持矩阵漂移 | `python3 scripts/validate_dispatch_capabilities.py --selftest` |
 | `scripts/route_model.py` | 从已验证 catalog 记录机械选择模型/推理档并输出固定路由回执；显式指定优先 | `python3 scripts/route_model.py --selftest` |
 | `scripts/run_claude_prompt.py` | 从 UTF-8 prompt 文件经 stdin 调用 Claude Code，防 YAML `---` 被误判为选项，并保留结构化 stdout | `python3 scripts/run_claude_prompt.py --selftest` |
 

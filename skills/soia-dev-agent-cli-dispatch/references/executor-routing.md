@@ -1,6 +1,6 @@
 # 执行器派发与推荐组合（按需加载）
 
-本文件承载执行器派发决策树、快速查表、推荐组合与自动路由运行机制。主 `SKILL.md` 只保留路由摘要；每次派发时先核对 `dispatch-capabilities.yml` 的实际支持状态，再决定执行器。
+本文件承载执行器派发决策树、快速查表、推荐组合与自动路由运行机制。主 `SKILL.md` 只保留路由摘要；每次派发时先核对 `../supported-agents.yml` 的实际支持状态，再决定执行器。
 
 ## 执行器派发决策树
 
@@ -19,6 +19,10 @@
 ├── 经济型编码 / 轻分析（DeepSeek 系按量计费）
 │   └── pi -p "..."（非交互必须 -p，否则进 TUI 挂起；详见 references/pi.md）
 │       详见 references/pi.md
+│
+├── DeepSeek 生态显式派发（DeepCode）
+│   └── cd <wt> && deepcode -p "$(< "$PROMPT_FILE")"
+│       详见 references/deepcode.md；当前仅命令模板验证，不自动路由
 │
 ├── 文档/内容写作
 │   ├── 消费者 Google 账号：agy -p "..."（需先确认额度；显式派发）
@@ -83,6 +87,7 @@
 | 中等任务 | opencode / kimi | `run` / `kimi-k2.6 --thinking --print` | `references/opencode-qwen.md` / `references/kimi-cli.md` |
 | 中等任务 | qodercli | `--dangerously-skip-permissions` | `references/qodercli.md` |
 | 经济型编码 / 轻分析 | pi | `pi -p`（非交互必须加 `-p`） | `references/pi.md` |
+| DeepSeek 生态显式派发 | deepcode | `deepcode -p` | `references/deepcode.md`（无结构化模型/usage 证据，不自动路由） |
 | 中等复杂度编码 / 快速迭代 | kimi | `--thinking` | `references/kimi-cli.md` |
 | Antigravity 消费者账号 | agy | 显式派发；当前不自动选模 | `references/antigravity-cli.md` |
 | 文档/内容 | agy（消费者）/ gemini（非消费者）/ qwen | agy 显式运行时显示名 / `gemini -p --yolo` / `qwen-max` | `references/antigravity-cli.md` / `references/gemini-cli.md` / `references/opencode-qwen.md` |

@@ -1,0 +1,15 @@
+# Public template for the optional private runtime configuration.
+# Copy to:
+# ~/.config/soia-skills/soia-dev-agent-cli-dispatch/config.yml
+#
+# This file contains no API key. Provider credentials stay in each provider's
+# own login/configuration store (for example ~/.deepcode/settings.json).
+schema_version: 1
+env:
+  SOIA_HOST_AI: "<optional-host-or-session-id>"
+  SOIA_DISPATCH_STATE_DIR: "<optional-user-state-directory>"
+  SOIA_DISPATCH_TEMP_DIR: "<optional-os-temp-directory>"
+storage:
+  # null means use the portable defaults from DATA_STORAGE_SPEC.md.
+  manifest_root: null
+  prompt_root: null

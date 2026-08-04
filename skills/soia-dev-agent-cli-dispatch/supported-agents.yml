@@ -1,11 +1,12 @@
-# Machine-readable capability and usage registry for soia-dev-agent-cli-dispatch.
-# Keep mutable support facts here; prose should link here instead of copying the full matrix.
+# Public machine-readable AI-agent support and usage registry for soia-dev-agent-cli-dispatch.
+# This is not a credential file. Keep mutable support facts here; prose should link here instead of copying the matrix.
 schema_version: 1
+config_template: config.example.yml
 updated_at: "2026-08-04"
 skill:
   name: soia-dev-agent-cli-dispatch
   display_name: "Dev Agent CLI Dispatch"
-  version: "1.2.2"
+  version: "1.2.3"
   purpose: "将编码、审查、分析、研究、文档和内容任务派发给外部 AI CLI，并回传模型、用量与成本证据。"
   triggers: [派活给外部 AI, 调用 agy, 多 CLI 派发]
 usage:
@@ -51,12 +52,12 @@ supported_workflows:
     label: "文档、研究与内容生产"
     complexity: easy_or_medium
     dispatch_mode: explicit_only
-    recommended_executors: [agy, gemini, qwen, opencode, pi]
+    recommended_executors: [agy, gemini, qwen, opencode, pi, deepcode]
     verified_auto_route: null
     status: executor_template_or_pending_benchmark
     suitable_for: [文档草稿, 资料总结, 结构化提取, 内容改写]
     avoid_for: [把未核验事实直接发布]
-executors:
+agents:
   codex:
     command: codex
     dispatch_supported: true
@@ -156,3 +157,15 @@ executors:
     usage_evidence: unavailable
     auto_routing: []
     reference: references/qodercli.md
+  deepcode:
+    command: deepcode
+    dispatch_supported: true
+    matrix_supported: false
+    verification_status: command_help_verified
+    prompt_transport: argument
+    structured_output: text
+    model_integrity: unimplemented
+    usage_evidence: unavailable
+    auto_routing: []
+    reference: references/deepcode.md
+    provider_config: "~/.deepcode/settings.json"

@@ -2,10 +2,10 @@
 # @created_by unknown
 # @created_at unknown
 # @modified_by openai/gpt-5.6-sol
-# @modified_at 2026-08-04 11:13:15
-# @version 0.3.0
-# @description Run resumable external AI dispatch matrices with usage and integrity evidence.
-# @changelog Parse Pi JSONL usage/model evidence and reject unverified Pi text-mode passes.
+# @modified_at 2026-08-04 12:08:00
+# @version 0.4.0
+# @description Run resumable external AI dispatch matrices with usage, integrity evidence, and user-owned state storage.
+# @changelog Add DeepCode version probing, optional config loading, and portable default manifest storage.
 """Resumable, strictly-serial executor for a model/executor dispatch matrix.
 
 Phase 1 scope: this script is built and self-tested against mock commands
@@ -15,8 +15,8 @@ order given) because interleaved provider CLIs make quota/downgrade
 attribution ambiguous.
 
 Usage:
-    python3 run_matrix.py --cases cases.json --run-id my-run --manifest-dir /path/to/dir
-    python3 run_matrix.py --cases cases.json --run-id my-run --manifest-dir /path/to/dir --resume
+    python3 run_matrix.py --cases cases.json --run-id my-run
+    python3 run_matrix.py --cases cases.json --run-id my-run --manifest-dir <user-state-dir> --resume
     python3 run_matrix.py --selftest
 
 cases.json shape (array):
@@ -25,9 +25,10 @@ cases.json shape (array):
       "cmd_template": "codex exec ..."}, ...]
 
 Manifest is written atomically to
-    <manifest-dir>/manifest.json
-after every single case (spec requirement), so a killed run can always be
-inspected and resumed from the last completed case.
+    <state>/soia-skills/soia-dev-agent-cli-dispatch/runs/<run-id>/manifest.json
+by default, or to an explicit --manifest-dir, after every single case (spec
+requirement). It contains redacted status/usage/model fields only; a killed
+run can be inspected and resumed without writing raw prompt or response text.
 """
 
 from __future__ import annotations
@@ -48,6 +49,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import catalog_lib  # noqa: E402
 import estimate_cost  # noqa: E402
+import resolve_storage  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -119,6 +121,7 @@ VERSION_COMMANDS = {
     "opencode": ["opencode", "--version"],
     "qwen": ["qwen", "--version"],
     "pi": ["pi", "--version"],
+    "deepcode": ["deepcode", "--version"],
 }
 
 DEFAULT_TIMEOUT_SECONDS = 600
@@ -358,21 +361,31 @@ def probe_cli_version(executor: str) -> str:
 
 def atomic_write_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        path.parent.chmod(0o700)
+    except OSError:
+        pass
     fd, tmp_name = tempfile.mkstemp(dir=str(path.parent), prefix=".manifest-", suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             json.dump(data, handle, ensure_ascii=False, indent=2)
             handle.write("\n")
         os.replace(tmp_name, path)
+        try:
+            path.chmod(0o600)
+        except OSError:
+            pass
     finally:
         if os.path.exists(tmp_name):
             os.remove(tmp_name)
 
 
 def build_resume_command(cases_path: Path, run_id: str, manifest_dir: Path) -> str:
+    # Keep private case/state paths out of the persisted manifest. The caller
+    # can reconstruct them from its original invocation or configured roots.
     return (
-        f"python3 {Path(__file__).name} --cases {cases_path} --run-id {run_id} "
-        f"--manifest-dir {manifest_dir} --resume"
+        f"python3 {Path(__file__).name} --cases <cases.json> --run-id {run_id} "
+        "--resume  # reuse the same --manifest-dir or configured state root"
     )
 
 
@@ -567,6 +580,11 @@ def run_matrix(
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     catalog_data: dict | None = None,
 ) -> dict[str, Any]:
+    manifest_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        manifest_dir.chmod(0o700)
+    except OSError:
+        pass
     manifest_path = manifest_dir / "manifest.json"
     existing = load_manifest(manifest_path) if resume else None
 
@@ -593,7 +611,7 @@ def run_matrix(
         "started_at": existing["started_at"] if existing else now_iso(),
         "updated_at": now_iso(),
         "host_ai": host_ai,
-        "skill_source_path": skill_source_path,
+        "skill_name": "soia-dev-agent-cli-dispatch",
         "cli_versions": cli_versions,
         "pricing_version": (catalog_data or {}).get("updated_at"),
         "expected_cases": len(cases),
@@ -604,6 +622,8 @@ def run_matrix(
         "stop_reason": None,
         "cases": [],
         "resume_command": build_resume_command(cases_path, run_id, manifest_dir),
+        "manifest_storage": "configured_run_directory",
+        "manifest_path": "<configured-run-directory>/manifest.json",
     }
 
     # A fresh invocation starts with no provider blocked. On --resume this lets
@@ -1298,12 +1318,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--cases", help="Path to a cases.json file.")
     parser.add_argument("--run-id", help="Stable identifier for this run; reused across --resume calls.")
-    parser.add_argument("--manifest-dir", help="Directory to hold manifest.json for this run.")
-    parser.add_argument("--resume", action="store_true", help="Resume a previous run in the same --manifest-dir.")
+    parser.add_argument(
+        "--manifest-dir",
+        help="Override the user-state run directory; default is <state>/soia-skills/soia-dev-agent-cli-dispatch/runs/<run-id>.",
+    )
+    parser.add_argument("--config", help="Optional private config.yml; default follows SOIA_DEV_AGENT_CLI_DISPATCH_CONFIG_FILE.")
+    parser.add_argument("--resume", action="store_true", help="Resume a previous run in the same configured or explicit state directory.")
     parser.add_argument(
         "--host-ai",
-        default=os.environ.get("SOIA_HOST_AI", "unknown"),
-        help="Identifier for the orchestrating AI/session, recorded in the manifest. Defaults to $SOIA_HOST_AI or 'unknown'.",
+        default=None,
+        help="Identifier for the orchestrating AI/session. CLI value overrides config and $SOIA_HOST_AI.",
     )
     parser.add_argument("--timeout-seconds", type=int, default=DEFAULT_TIMEOUT_SECONDS)
     parser.add_argument("--catalog", help="Override path to model-catalog.yml for api_equivalent_cost estimates.")
@@ -1313,8 +1337,15 @@ def main() -> int:
     if args.selftest:
         return run_selftest()
 
-    if not (args.cases and args.run_id and args.manifest_dir):
-        parser.error("--cases, --run-id, and --manifest-dir are required unless --selftest is used")
+    if not (args.cases and args.run_id):
+        parser.error("--cases and --run-id are required unless --selftest is used")
+
+    config_path = Path(args.config).expanduser() if args.config else resolve_storage.default_config_path()
+    try:
+        config = resolve_storage.load_config(config_path)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
 
     cases_path = Path(args.cases)
     try:
@@ -1335,13 +1366,20 @@ def main() -> int:
         except catalog_lib.CatalogError as exc:
             print(f"WARN: failed to load catalog for cost estimates: {exc}", file=sys.stderr)
 
+    config_values = resolve_storage.effective_env(config)
+    host_ai = args.host_ai or config_values.get("SOIA_HOST_AI") or "unknown"
+    manifest_dir = resolve_storage.resolve_manifest_dir(
+        args.run_id,
+        explicit=args.manifest_dir,
+        config=config,
+    )
     manifest = run_matrix(
         cases=cases,
         run_id=args.run_id,
-        manifest_dir=Path(args.manifest_dir),
+        manifest_dir=manifest_dir,
         cases_path=cases_path,
         resume=args.resume,
-        host_ai=args.host_ai,
+        host_ai=host_ai,
         skill_source_path=str(skill_root),
         timeout_seconds=args.timeout_seconds,
         catalog_data=catalog_data,

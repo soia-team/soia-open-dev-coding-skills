@@ -4,9 +4,9 @@
 # @modified_by gpt-5.6-sol
 # @modified_at 2026-08-04 11:43:03
 # @version 0.1.0
-# @description Validate the dispatch capability and usage registry without third-party YAML dependencies.
-# @changelog Add schema, workflow, executor, and reference-path checks for dispatch-capabilities.yml.
-"""Validate dispatch-capabilities.yml and its referenced files."""
+# @description Validate the public supported-agents YAML without third-party YAML dependencies.
+# @changelog Add schema, workflow, agent, and reference-path checks for supported-agents.yml.
+"""Validate supported-agents.yml and its referenced files."""
 
 from __future__ import annotations
 
@@ -19,8 +19,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import catalog_lib  # noqa: E402
 
 
-EXPECTED_EXECUTORS = {
-    "codex", "claude", "pi", "agy", "gemini", "kimi", "opencode", "qwen", "qodercli"
+EXPECTED_AGENTS = {
+    "codex", "claude", "pi", "agy", "gemini", "kimi", "opencode", "qwen", "qodercli", "deepcode"
 }
 EXPECTED_WORKFLOWS = {
     "easy-code-and-analysis", "medium-code-and-review",
@@ -76,20 +76,20 @@ def validate(path: Path) -> list[str]:
                 if field not in item:
                     errors.append(f"workflow {item.get('id')!r}: missing field {field}")
 
-    executors = data.get("executors")
-    if not isinstance(executors, dict):
-        return errors + ["executors must be a mapping"]
+    agents = data.get("agents")
+    if not isinstance(agents, dict):
+        return errors + ["agents must be a mapping"]
 
-    actual = set(executors)
-    missing = EXPECTED_EXECUTORS - actual
-    extra = actual - EXPECTED_EXECUTORS
+    actual = set(agents)
+    missing = EXPECTED_AGENTS - actual
+    extra = actual - EXPECTED_AGENTS
     if missing:
-        errors.append(f"missing executors: {sorted(missing)}")
+        errors.append(f"missing agents: {sorted(missing)}")
     if extra:
-        errors.append(f"unknown executors: {sorted(extra)}")
+        errors.append(f"unknown agents: {sorted(extra)}")
 
-    root = path.parent.parent
-    for name, entry in executors.items():
+    root = path.parent
+    for name, entry in agents.items():
         if not isinstance(entry, dict):
             errors.append(f"{name}: entry must be a mapping")
             continue
@@ -108,14 +108,14 @@ def validate(path: Path) -> list[str]:
 
 
 def run_selftest() -> int:
-    path = Path(__file__).resolve().parents[1] / "references" / "dispatch-capabilities.yml"
+    path = Path(__file__).resolve().parents[1] / "supported-agents.yml"
     errors = validate(path)
     print("=== validate_dispatch_capabilities.py selftest ===")
     if errors:
         for error in errors:
             print(f"[FAIL] {error}")
         return 1
-    print(f"[PASS] {len(EXPECTED_EXECUTORS)} executor entries and reference paths are valid")
+    print(f"[PASS] {len(EXPECTED_AGENTS)} agent entries and reference paths are valid")
     return 0
 
 
@@ -126,7 +126,7 @@ def main() -> int:
     args = parser.parse_args()
     if args.selftest:
         return run_selftest()
-    path = args.file or Path(__file__).resolve().parents[1] / "references" / "dispatch-capabilities.yml"
+    path = args.file or Path(__file__).resolve().parents[1] / "supported-agents.yml"
     errors = validate(path)
     if errors:
         for error in errors:
