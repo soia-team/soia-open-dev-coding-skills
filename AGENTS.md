@@ -75,3 +75,16 @@ git diff --check
 - 不直接 push `dev`/`main`，不在 feature PR 修改插件 `-SNAPSHOT` 版本。
 - 本地 checkout 安装只能称为“本地调试安装”；最终安装验收必须使用已推送远程仓。
 - 合并、发布和客户端更新是独立动作，不因代码检查通过而自动执行。
+
+## Git Workflow
+
+- **Branch off `main`** (the latest formal release), then open the PR against
+  `dev` and wait for the `audit` check. `main` is always an ancestor of `dev`,
+  so such a branch always merges cleanly. Branch off `dev` only when your change
+  genuinely builds on unreleased work, and say so in the PR body.
+- `main` never receives PRs. It moves only by **fast-forward from `dev`** during
+  a formal release driven by `soia-meta-skill-release`, so `main` and `dev` then
+  point at the same commit. Never push directly to `main` or `dev`.
+- Plugin manifests on `dev` carry a `-SNAPSHOT` version naming the next release
+  target. Do not change manifest versions in feature PRs; versions move only
+  during a release.
