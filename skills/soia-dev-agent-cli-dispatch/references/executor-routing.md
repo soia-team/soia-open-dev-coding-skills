@@ -1,6 +1,6 @@
 # 执行器派发与推荐组合（按需加载）
 
-本文件承载执行器派发决策树、快速查表、推荐组合与自动路由运行机制。主 `SKILL.md` 只保留路由摘要；每次派发时先核对 `executor-capabilities.yml` 的实际支持状态，再决定执行器。
+本文件承载执行器派发决策树、快速查表、推荐组合与自动路由运行机制。主 `SKILL.md` 只保留路由摘要；每次派发时先核对 `dispatch-capabilities.yml` 的实际支持状态，再决定执行器。
 
 ## 执行器派发决策树
 
@@ -101,7 +101,7 @@
 
 ## 推荐组合（部分实证路由）
 
-Codex 6 个型号的 35-case 与 Claude 3 个型号的 15-case 来自 2026-07-10 smoke 聚合记录，但原始 manifest 未随交接提供，且未覆盖 catalog 中全部型号，因此标记 `partial_coverage`；Pi 的 easy 路由来自 2026-08-04 单模型 JSONL 实测。表内推荐只对已覆盖组合有效。Gemini 本轮为 `blocked_auth`，Antigravity 未获准运行付费/额度模型评测，Kimi/OpenCode/Qwen 仍是 `pending_benchmark`。不得把部分实证包装成全量完成，Codex/Claude 证据边界见 `references/benchmark-2026-07-10.md`，Pi 边界见 `references/pi.md`。
+Codex 6 个型号的 35-case 与 Claude 3 个型号的 15-case 来自 2026-07-10 smoke 聚合记录，但原始 manifest 未随交接提供，且未覆盖 catalog 中全部型号，因此标记 `partial_coverage`；Pi 的 easy 路由来自 2026-08-04 单模型 JSONL 实测。表内推荐只对已覆盖组合有效。Gemini 本轮为 `blocked_auth`，Antigravity 未获准运行付费/额度模型评测，Kimi/OpenCode/Qwen 仍是 `pending_benchmark`。不得把部分实证包装成全量完成，Codex/Claude 证据边界见 `reports/benchmark-2026-07-10.md`，Pi 边界见 `references/pi.md`。
 
 | 执行器家族 | easy 候选 | medium 候选 | hard 候选 | 状态 |
 |---|---|---|---|---|
@@ -116,7 +116,7 @@ Codex 6 个型号的 35-case 与 Claude 3 个型号的 15-case 来自 2026-07-10
 ### 反模式警示（实证）
 
 - **`claude-opus-4-8` 在简单任务上对 effort 无响应**：同一 fixture 上五档 effort（low/medium/high/xhigh/max）的 output token 数和 cost 完全相同（22 tokens / $0.0677）——五档都被 CLI 接受（非 unsupported），只是没有测量到差异。**这只在本次简单固定算术任务上成立**，难任务未测试，不要泛化成"opus 的 effort 参数整体无用"。因此本表 hard 档没有给 claude 侧推荐。依据：2026-07-10 smoke matrix。
-- **`gpt-5.6-luna` 的 `xhigh` 档烧钱不产出**：旧的「同题 8 跑深度调研」对照里，`xhigh` 档烧到 933k tokens（terra 的约 4.6 倍），产出体积却没有相应变大，因此 luna 只推荐 easy 档 + low 效力，不建议升到高档。依据：2026-07-10 同题 8 跑深度调研（见 `references/benchmark-2026-07-10.md`）。
+- **`gpt-5.6-luna` 的 `xhigh` 档烧钱不产出**：旧的「同题 8 跑深度调研」对照里，`xhigh` 档烧到 933k tokens（terra 的约 4.6 倍），产出体积却没有相应变大，因此 luna 只推荐 easy 档 + low 效力，不建议升到高档。依据：2026-07-10 同题 8 跑深度调研（见 `reports/benchmark-2026-07-10.md`）。
 - **结论：高 effort 是否有回报，取决于「这个模型」和「这个任务难度」两个变量共同作用，不是只看任务难度。** 同一个简单任务上，`claude-sonnet-5` 的 output 随 effort 单调增长（low 22 tokens → max 410 tokens），说明它确实在用 effort 换更多思考；`claude-opus-4-8` 完全不为所动。不要无脑对所有模型都开最高档，先确认该模型在类似任务上是否已有「effort 有效」的实证。依据：2026-07-10 smoke matrix。
 
 ## codex 5.6 系实测分级（2026-07-10，同题对照 8 跑）

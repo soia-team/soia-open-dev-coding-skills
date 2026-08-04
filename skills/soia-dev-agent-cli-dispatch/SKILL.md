@@ -173,7 +173,7 @@ Standard/Enterprise、Gemini API Key 和 Vertex AI 通道仍保留在 `gemini`
 
 ## 执行器派发与推荐组合（按需加载）
 
-完整派发决策树、快速查表、推荐组合与自动路由判据见 `references/executor-routing.md`；各执行器支持状态以 `references/executor-capabilities.yml` 为准。每次派发前先核对实际支持状态，再选择执行器。
+完整派发决策树、快速查表、推荐组合与自动路由判据见 `references/executor-routing.md`；支持的工作类型、客户端、用法和验证状态以 `references/dispatch-capabilities.yml` 为准。每次派发前先核对实际支持状态，再选择执行器。
 
 自动路由与显式指定的裁决：`scripts/route_model.py` 输出 `selected_model`、`selected_reasoning_effort`、`task_complexity`、`selection_reason`、`estimated_cost_range`、`catalog_version` 与 `selection_status`；没有 verified candidate 时返回阻断状态，不得从 `pending_benchmark` 候选中静默挑一个。
 
@@ -322,14 +322,20 @@ pi -p --mode json --no-session \
 | qodercli 执行规范 | `references/qodercli.md` | 派发给 qodercli 时 |
 | Pi (pi-coding-agent) 执行规范 | `references/pi.md` | 派发给 pi 时 |
 | 执行器派发与推荐组合 | `references/executor-routing.md` | 需要决策树/快速查表/自动路由判据/推荐组合时 |
-| 执行器支持能力矩阵 | `references/executor-capabilities.yml` | 核对执行器实际支持状态时 |
+| 调度能力与使用配置（YAML） | `references/dispatch-capabilities.yml` | 查看支持的工作类型、客户端、用法、自动路由和验证状态时 |
 | OpenCode + Qwen 执行规范 | `references/opencode-qwen.md` | 派发给 opencode/qwen 时 |
 | 代码文件元数据头规范 | `references/metadata-header.md` | 任何代码写入前 |
 | 模型价格资料原文（2026-07-10 快照） | `references/model-pricing-2026-07-10.md` | 需要人工核对官方定价、或价格资料更新时 |
 | 模型价格/推理档运行时目录 | `references/model-catalog.yml` | `scripts/estimate_cost.py` / `scripts/run_matrix.py` 运行时读取；人工修改前后都跑一次 `scripts/catalog_lib.py --selftest` |
-| P4 部分覆盖路由证据（2026-07-10 smoke matrix 聚合结果） | `references/benchmark-2026-07-10.md` | 需要查已覆盖组合、聚合数字、原始 manifest 缺口或下一轮范围时 |
+| 历史 benchmark 报告（2026-07-10） | `reports/benchmark-2026-07-10.md` | 需要查历史聚合数字、原始 manifest 缺口或下一轮 benchmark 范围时 |
 
-**加载原则**：派发决策确定执行器后，只加载对应执行器的 reference，不要全部加载。
+### Examples（可复用实例）
+
+| 实例 | 文件 | 何时加载 |
+|------|------|----------|
+| Pi + DeepSeek V4 Flash easy 派发 | `examples/pi-deepseek-v4-flash-easy.md` | 需要照着完成一次结构化 Pi 派发与验收时 |
+
+**加载原则**：派发决策确定执行器后，只加载对应执行器的 reference；需要照做时再加载对应 example，不要全部加载。
 
 ## Scripts（按需调用）
 
@@ -338,8 +344,8 @@ pi -p --mode json --no-session \
 | `scripts/catalog_lib.py` | 受限 YAML 子集解析器 + `model-catalog.yml` schema 校验（重复 model_id / 缺字段 / 负价拒绝，未知 reasoning level 标记为 WARN） | `python3 scripts/catalog_lib.py --selftest` |
 | `scripts/estimate_cost.py` | 给定 model + token 数，输出 API 等价费用估算（分项 + 总额 + `confidence`），未知模型给出近似候选并以 exit code 2 退出 | `python3 scripts/estimate_cost.py --selftest` |
 | `scripts/run_matrix.py` | 可恢复的串行派发矩阵执行器；支持 Codex、Claude 与 Pi 的模型完整性证据，其中 Pi 解析 `--mode json` JSONL | `python3 scripts/run_matrix.py --selftest` |
-| `scripts/validate_executor_capabilities.py` | 校验执行器能力 YAML 的字段、执行器清单和 reference 路径，防止支持矩阵漂移 | `python3 scripts/validate_executor_capabilities.py --selftest` |
+| `scripts/validate_dispatch_capabilities.py` | 校验调度能力 YAML 的技能、工作流、执行器、字段和 reference 路径，防止支持矩阵漂移 | `python3 scripts/validate_dispatch_capabilities.py --selftest` |
 | `scripts/route_model.py` | 从已验证 catalog 记录机械选择模型/推理档并输出固定路由回执；显式指定优先 | `python3 scripts/route_model.py --selftest` |
 | `scripts/run_claude_prompt.py` | 从 UTF-8 prompt 文件经 stdin 调用 Claude Code，防 YAML `---` 被误判为选项，并保留结构化 stdout | `python3 scripts/run_claude_prompt.py --selftest` |
 
-所有脚本均为纯 Python 标准库实现，无第三方依赖。修改任意一个后，先跑对应 `--selftest`，再跑其余脚本的自检，确认没有连带破坏（`estimate_cost.py`、`run_matrix.py` 和 `validate_executor_capabilities.py` 都从 `catalog_lib.py` 导入受限 YAML 解析/校验逻辑）。
+所有脚本均为纯 Python 标准库实现，无第三方依赖。修改任意一个后，先跑对应 `--selftest`，再跑其余脚本的自检，确认没有连带破坏（`estimate_cost.py`、`run_matrix.py` 和 `validate_dispatch_capabilities.py` 都从 `catalog_lib.py` 导入受限 YAML 解析/校验逻辑）。

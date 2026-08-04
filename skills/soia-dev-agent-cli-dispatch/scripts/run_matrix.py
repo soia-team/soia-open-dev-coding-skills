@@ -101,7 +101,7 @@ CODEX_TOKENS_USED_RE = re.compile(r"tokens used", re.IGNORECASE)
 # back to actual_model_unverified -- see detect_actual_model() below.
 CLAUDE_OUTPUT_FORMAT_JSON_RE = re.compile(r"--output-format[=\s]+json\b", re.IGNORECASE)
 # Two decoration patterns confirmed against a live `claude` 2.1.206 CLI on
-# 2026-07-10 (see references/benchmark-2026-07-10.md for the raw payloads):
+# 2026-07-10 (see reports/benchmark-2026-07-10.md for the raw payloads):
 #   - no --model flag (session/account default): modelUsage key came back
 #     bracketed, e.g. "claude-opus-4-8[1m]" (most likely a 1M-context-window
 #     execution-mode annotation).
@@ -244,7 +244,7 @@ def _normalize_claude_model_id(value: str) -> str:
     model_id/requested_model string.
 
     Verified directly against a live `claude` 2.1.206 CLI on 2026-07-10 (not
-    guessed -- see references/benchmark-2026-07-10.md for the raw payloads):
+    guessed -- see reports/benchmark-2026-07-10.md for the raw payloads):
     a bracketed execution-mode suffix (e.g. "[1m]") and/or a trailing 8-digit
     date suffix (e.g. "-20251001") may appear depending on how --model was
     (or was not) specified; requesting the full catalog model_id directly
@@ -941,7 +941,7 @@ def run_selftest() -> int:
         # instead of always reporting actual_model_unverified. The mock
         # stdout payloads below mirror the real shape captured from a live
         # `claude` 2.1.206 CLI on 2026-07-10 (see
-        # references/benchmark-2026-07-10.md), including the two decoration
+        # reports/benchmark-2026-07-10.md), including the two decoration
         # patterns actually observed there: a bracketed mode suffix and a
         # dated model id.
         claude_json_dir = tmp_path / "manifest-claude-json"
