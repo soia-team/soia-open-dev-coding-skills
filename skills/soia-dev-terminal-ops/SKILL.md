@@ -1,11 +1,11 @@
 ---
 name: soia-dev-terminal-ops
 description: 管理 POSIX/macOS/Linux 上的长任务、tmux 后台会话、日志抓取、停滞诊断与安全恢复；在终止进程前用日志、CPU、网络等多信号交叉判断，并执行 TERM→复查→KILL 确认门。
-version: 1.1.1
+version: 1.1.2
 created_at: 2026-07-07 14:44:10
-updated_at: 2026-07-27 15:43:29
+updated_at: 2026-08-04 14:59:54
 created_by: claude opus 4.6
-updated_by: codex gpt-5
+updated_by: gpt-5.6-sol
 ---
 
 # soia-dev-terminal-ops
@@ -72,7 +72,15 @@ env:
   TERMINAL_OPS_FALLBACK_COMMAND: "<optional-command>"
 ```
 
-优先级：本次用户输入/CLI 参数 → 进程环境 → 配置文件。未给日志目录时才使用 `${TMPDIR}`；若 `TMPDIR` 也未设置，先请用户指定目录。
+优先级：本次用户输入/CLI 参数 → 进程环境 → 配置文件。未给日志目录时才使用 `${TMPDIR}`；若 `TMPDIR` 也未设置，先请用户指定目录。普通配置只能保存非秘密参数；命令包含 token 或其他秘密时必须改用 Provider 官方登录态、系统凭据库或安全的进程环境传递，不能写入配置或日志。
+
+### 私密信息与中间数据
+
+- 命令、环境、进程列表和日志可能暴露源码、路径、账号或秘密；执行前识别敏感参数，回执只显示脱敏后的命令与最小日志摘要。
+- A 类运行日志写入客户指定目录；未指定时使用 `${TMPDIR}/soia-dev-terminal-ops/<session>/`。任务结束后默认清理本技能创建的临时日志，客户明确要求保留时除外。
+- 高影响动作确需持久审计时，写入客户指定 state 根目录，或 `${XDG_STATE_HOME:-~/.local/state}/soia-skills/soia-dev-terminal-ops/`；只记录时间、目标标识、授权和结果，不记录环境变量、完整命令秘密或日志正文。
+- 客户要求的诊断包是交付物，只写其指定路径；目标项目自身日志遵循项目规则。本技能不创建未声明的 cache 或 prompt/响应存档。
+- B 类审计记录在客户确认保留策略前不自动删除；A 类临时数据只清理本技能创建且已复核目标的目录。
 
 ### 日志与完成回执
 
@@ -199,8 +207,8 @@ ps -p <PID> >/dev/null 2>&1 && echo "still alive" || echo "killed"
 
 | 类别 | 本技能中的例子 | 落点 |
 |---|---|---|
-| A 临时 | 本轮 build/test 日志、采样快照 | 用户指定日志目录；否则 `${TMPDIR}/soia-dev-terminal-ops/` |
-| B 审计 | kill、会话清理、fallback 等高影响动作记录 | 用户指定 state 目录或 `${XDG_STATE_HOME}/soia-dev-terminal-ops/`；未配置时先询问 |
+| A 临时 | 本轮 build/test 日志、采样快照 | 用户指定日志目录；否则 `${TMPDIR}/soia-dev-terminal-ops/<session>/` |
+| B 审计 | kill、会话清理、fallback 等高影响动作记录 | 用户指定 state 目录或 `${XDG_STATE_HOME:-~/.local/state}/soia-skills/soia-dev-terminal-ops/`；未配置时先询问 |
 | C 交付物 | 用户要求保留的完整诊断包 | 用户明确指定路径 |
 | D 产品功能即日志 | 目标项目定义的任务日志 | 仅服从目标项目已记录的约定，不由本技能发明 |
 | E 纯 stdout | 短状态检查、无需留存的摘要 | 不写磁盘 |

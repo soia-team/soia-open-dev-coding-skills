@@ -22,20 +22,9 @@ FRONTMATTER_DATETIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 # future legacy exception is reviewable instead of silently weakening the gate.
 GRANDFATHER_MISSING_FRONTMATTER: frozenset[str] = frozenset()
 GRANDFATHER_INVALID_DATETIME: frozenset[str] = frozenset()
-# Baseline of this repository only. Remove a name as soon as that skill is
-# substantively edited and gains the required customer-readable section.
-GRANDFATHER_MISSING_PRIVATE_DATA_SECTION = frozenset(
-    {
-        "soia-dev-agent-md-advisor",
-        "soia-dev-coding-protocol",
-        "soia-dev-doc-sync",
-        "soia-dev-fix-loop",
-        "soia-dev-github-ops",
-        "soia-dev-project-scaffold",
-        "soia-dev-task-execute",
-        "soia-dev-terminal-ops",
-    }
-)
+# No current skill is exempt: every SKILL.md must explain private and
+# intermediate data handling in customer-readable language.
+GRANDFATHER_MISSING_PRIVATE_DATA_SECTION: frozenset[str] = frozenset()
 SEGMENT_EXEMPT: set[str] = set()
 DEPENDENCY_KEYS = {"hard", "optional", "external"}
 MAX_SKILL_LINES = 500
@@ -359,6 +348,16 @@ def audit_skill(root: Path, skill_dir: Path, findings: list[Finding]) -> None:
             findings.append(grandfather_warning(rel(skill_md, root), f"grandfathered {message}"))
         else:
             findings.append(Finding("ERROR", rel(skill_md, root), message))
+
+    for path in skill_dir.iterdir():
+        if path.is_file() and path.name != "SKILL.md":
+            findings.append(
+                Finding(
+                    "ERROR",
+                    rel(path, root),
+                    "loose file at skill root; move templates to assets/, stable facts to references/, dated evidence to reports/, or executables to scripts/",
+                )
+            )
 
     for path in skill_dir.rglob("*"):
         if path.is_dir():

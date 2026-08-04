@@ -1,11 +1,11 @@
 ---
 name: soia-dev-coding-protocol
 description: 为普通工程代码改动建立最小范围、验证前置、anti-fake-fix 与写后复核契约；适用于修复、重构、实现和评审。
-version: 1.0.1
+version: 1.0.2
 created_at: 2026-07-20 17:22:49
-updated_at: 2026-07-22 21:13:22
+updated_at: 2026-08-04 14:59:54
 created_by: gpt-5.6-terra
-updated_by: gpt-5.6-luna
+updated_by: gpt-5.6-sol
 ---
 
 # soia-dev-coding-protocol
@@ -44,6 +44,14 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-coding-proto
 ```
 
 强依赖：目标仓库和与任务相称的验证手段。优先使用项目已有测试、lint、类型检查和 fixture；没有时使用最窄的可靠复现并说明限制。本技能无需私有配置。
+
+### 私密信息与中间数据
+
+- 只读取当前任务需要的源码、配置、测试和日志片段；遇到凭据、客户数据或生产日志时最小化引用，不复制到补丁、测试 fixture 或回执。
+- 代码改动和用户要求的交付物留在目标仓库或用户指定路径。本技能不建立自己的持久 state、cache 或调用记录。
+- 测试、构建和工具产生的临时文件服从目标仓库约定；没有约定时使用操作系统临时目录，并在任务结束后清理本技能创建且可安全删除的内容。
+- Provider 凭据只使用官方登录态或系统凭据库；普通 `config.yml`、命令行、日志和提交中不得保存秘密。
+- 完成回执只记录文件路径、检查命令和结果摘要，不回显秘密值、完整 prompt 或无关源码正文。
 
 ### 日志与完成回执
 
