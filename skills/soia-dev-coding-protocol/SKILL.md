@@ -1,9 +1,9 @@
 ---
 name: soia-dev-coding-protocol
 description: 为普通工程代码改动建立最小范围、验证前置、anti-fake-fix 与写后复核契约；适用于修复、重构、实现和评审。触发：「改这个 bug」「重构这段」「加个功能」
-version: 1.0.3
+version: 1.0.4
 created_at: 2026-07-20 17:22:49
-updated_at: 2026-08-05 10:30:00
+updated_at: 2026-08-05 13:30:00
 created_by: gpt-5.6-terra
 updated_by: claude-opus-5
 ---

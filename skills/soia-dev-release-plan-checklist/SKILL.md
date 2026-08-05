@@ -1,9 +1,9 @@
 ---
 name: soia-dev-release-plan-checklist
 description: 为互联网软件发版生成发布清单、预检门、灰度验证与发布后核对；适用于上线、部署、回滚规划。触发：「上线前检查什么」「灰度方案」「回滚预案」
-version: 2.0.1
+version: 2.0.2
 created_at: 2026-07-23 00:03:23
-updated_at: 2026-08-05 10:30:00
+updated_at: 2026-08-05 13:30:00
 created_by: gpt-5.6-luna
 updated_by: claude-opus-5
 ---
