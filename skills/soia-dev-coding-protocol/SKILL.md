@@ -45,6 +45,8 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-coding-proto
 
 强依赖：目标仓库和与任务相称的验证手段。优先使用项目已有测试、lint、类型检查和 fixture；没有时使用最窄的可靠复现并说明限制。本技能无需私有配置。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 私密信息与中间数据
 
 - 只读取当前任务需要的源码、配置、测试和日志片段；遇到凭据、客户数据或生产日志时最小化引用，不复制到补丁、测试 fixture 或回执。

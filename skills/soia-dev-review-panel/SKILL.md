@@ -65,6 +65,8 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-review-panel
 
 本技能不需要私有配置。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 私密信息与中间数据
 
 本技能不持久化任何数据，不需要凭据、cookie 或 API key。审查材料（diff 内容、技能目录内容）只在当前对话/子任务上下文中使用，不写入任何文件、日志或第三方服务；如果和 `soia-dev-github-ops` 组合使用，凭据与网络请求边界由那个技能负责，不在本技能范围内。

@@ -52,6 +52,8 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-fix-loop -y
 
 本技能无需其他专用安装或私有配置。强依赖是可访问的 findings、目标工作区和与风险相称的验证入口；遵循目标仓库已有的贡献说明和检查约定。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 私密信息与中间数据
 
 - Findings、失败日志和复现材料可能含源码、账号或客户数据；只保留决策所需的最小摘录，先脱敏再进入回执或可提交 fixture。

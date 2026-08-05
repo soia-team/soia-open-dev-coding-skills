@@ -68,6 +68,8 @@ SOIA_DEV_GITHUB_OPS_CONFIG_FILE=<custom-config-path>
 - 普通 `config.yml` 只保存非秘密默认值，例如仓库名或 profile 指针。GitHub token、cookie 和 session 必须留在 `gh auth login` 管理的官方凭据存储或系统凭据库，不能写进配置、仓库、正文或日志。
 - 第三方 skill 只能声明依赖和安装方式，不直接修改第三方 skill 文件。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 私密信息与中间数据
 
 - `gh` 查询结果可能包含私有仓库名、issue/PR 正文、成员信息和日志；只读取本次操作所需字段，默认通过结构化 stdout 处理，不持久保存完整响应。

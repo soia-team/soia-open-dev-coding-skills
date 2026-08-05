@@ -63,6 +63,8 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-agent-cli-di
 
 不要同时维护插件副本和 `~/.agents/skills` 共享副本，以免同名技能漂移。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 配置文件
 
 本技能目录中有两类 YAML，职责不同：

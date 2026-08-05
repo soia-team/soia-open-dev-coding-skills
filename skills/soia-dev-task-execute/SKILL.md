@@ -56,6 +56,8 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-task-execute
 
 本技能不需要其他安装程序或私有配置。强依赖是可访问的目标工作区与至少一种可复现的验证方式；若仓库已有贡献说明、测试入口或本地规则，先读取并以其为准。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 私密信息与中间数据
 
 - 只读取完成当前任务所需的工作区文件、测试输出和配置字段；客户数据、凭据和生产日志只做最小化处理，不复制进示例、补丁或回执。

@@ -45,6 +45,23 @@ updated_by: claude-opus-5
 
 默认以 Markdown 交付；客户指定表格、测试管理系统字段或 CSV 模板时，保持下列语义不变。
 
+### 依赖与安装
+
+装整个域（Claude Code 与 Codex 共用同一份域插件）：
+
+```bash
+claude plugin marketplace add soia-team/soia-open-skills
+claude plugin install soia-dev@soia
+```
+
+只装这一个技能：
+
+```bash
+npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-test-draft-doc -y
+```
+
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 1. 测试计划
 
 | 字段 | 内容 |

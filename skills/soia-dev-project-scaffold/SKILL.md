@@ -42,6 +42,8 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-project-scaf
 
 依赖 POSIX shell、`mkdir` 和 `git`（仅用于检查，不初始化仓库）。不需要私有配置；项目特定规则应由客户在生成后的 `AGENTS.md` 中补充。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 私密信息与中间数据
 
 - 本技能只读取目标目录是否存在及同名文件状态，不扫描目标项目之外的文件，也不收集账号、凭据或项目正文。

@@ -113,3 +113,5 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-release-plan
 ## 验收
 
 在交付前进行一次前向检查：从输出中任选一个灰度批次，确认它同时含有范围、观察项、通过条件或待确认标记、停止动作和负责人；并确认每个预检门都有证据或明确的缺口。缺一项则回到相应流程步骤补全。
+
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。

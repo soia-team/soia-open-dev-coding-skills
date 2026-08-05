@@ -74,6 +74,8 @@ env:
 
 优先级：本次用户输入/CLI 参数 → 进程环境 → 配置文件。未给日志目录时才使用 `${TMPDIR}`；若 `TMPDIR` 也未设置，先请用户指定目录。普通配置只能保存非秘密参数；命令包含 token 或其他秘密时必须改用 Provider 官方登录态、系统凭据库或安全的进程环境传递，不能写入配置或日志。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 私密信息与中间数据
 
 - 命令、环境、进程列表和日志可能暴露源码、路径、账号或秘密；执行前识别敏感参数，回执只显示脱敏后的命令与最小日志摘要。
