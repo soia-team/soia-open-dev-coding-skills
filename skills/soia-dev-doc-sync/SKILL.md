@@ -1,11 +1,11 @@
 ---
 name: soia-dev-doc-sync
-description: 审计并修复任意代码仓的 docs、README、CHANGELOG、VERSION 与明确真源之间的事实漂移；先建立真源优先级与证据，再按依赖顺序同步派生文档。
-version: 1.0.2
+description: 审计并修复任意代码仓的 docs、README、CHANGELOG、VERSION 与明确真源之间的事实漂移；先建立真源优先级与证据，再按依赖顺序同步派生文档。触发：「文档和代码对不上」「更新 README」「同步 CHANGELOG」
+version: 1.0.3
 created_at: 2026-07-20 17:22:49
-updated_at: 2026-08-04 14:59:54
+updated_at: 2026-08-05 10:30:00
 created_by: gpt-5.6-terra
-updated_by: gpt-5.6-sol
+updated_by: claude-opus-5
 ---
 
 # soia-dev-doc-sync
