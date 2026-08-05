@@ -49,6 +49,8 @@ npx skills add soia-team/soia-open-dev-skills -g -a '*' -s soia-dev-doc-sync -y
 
 本技能无需私有配置。用户特定路径只在本次参数或环境中提供，不写入技能。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 私密信息与中间数据
 
 - 真源、派生文档和 diff 可能包含未公开产品信息；只读取本次对账范围，不把全文复制到公共示例、临时报告或回执。

@@ -89,6 +89,8 @@ SOIA_DEV_AGENT_MD_ADVISOR_CONFIG_FILE=<custom-config-path>
 - 本技能不需要、也不应该读取任何 API key、cookie、session、账号凭据——诊断和产出只处理客户提供的**文本文件**和项目里可公开读取的配置文件。
 - `soia-dev-doc-sync` 是分工邻居，不是依赖：本技能不调用它，也不做它负责的跨文档状态对账；边界见上方"与 soia-dev-doc-sync 的分界"。
 
+**WorkBuddy** 的装载单位是角色化专家而不是插件，`npx skills add -a '*'` 覆盖不到它，需要单独安装，见 [docs/install/workbuddy.md](https://github.com/soia-team/soia-open-skills/blob/main/docs/install/workbuddy.md)。
+
 ### 私密信息与中间数据
 
 - 输入可能包含客户尚未公开的 AI 指令和项目结构；只读取本次范围内的文件，不扫描账号、vault 或无关目录，也不把原文复制进公共示例。
