@@ -1,9 +1,9 @@
 ---
 name: soia-dev-fix-loop
 description: 用五步闭环处理代码审查或测试发现：复现、决策、修复、回归复核与回执，防止遗漏、假修复和无证据收口。触发：「按评审意见改」「测试挂了怎么修」「能不能收口」
-version: 1.0.3
+version: 1.0.4
 created_at: 2026-07-22 21:25:39
-updated_at: 2026-08-05 10:30:00
+updated_at: 2026-08-05 13:30:00
 created_by: gpt-5.6-terra
 updated_by: claude-opus-5
 ---

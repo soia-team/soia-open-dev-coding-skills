@@ -1,9 +1,9 @@
 ---
 name: soia-dev-project-scaffold
 description: 为任意新 Git 项目生成最小 AI 协作基线：可编辑的 AGENTS.md 和 docs 导航目录；在写入前确认目标路径。触发：「新项目初始化」「搭 AI 协作基线」「生成文档骨架」
-version: 1.0.3
+version: 1.0.4
 created_at: 2026-07-20 11:52:54
-updated_at: 2026-08-05 10:30:00
+updated_at: 2026-08-05 13:30:00
 created_by: gpt-5.6-luna
 updated_by: claude-opus-5
 ---

@@ -1,11 +1,11 @@
 ---
 name: soia-dev-github-ops
 description: GitHub gh CLI 运维、PR 合规审查与修复。触发：「查 CI 挂了」「发 release」「加协作者权限」
-version: 2.1.3
+version: 2.1.4
 created_at: 2026-07-09 07:45:34
-updated_at: 2026-08-04 14:59:54
+updated_at: 2026-08-05 13:30:00
 created_by: claude opus 4.6
-updated_by: gpt-5.6-sol
+updated_by: claude-opus-5
 dependencies:
   hard: [soia-dev-review-panel, soia-dev-fix-loop]
 ---

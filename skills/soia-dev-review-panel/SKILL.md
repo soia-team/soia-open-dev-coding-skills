@@ -1,11 +1,11 @@
 ---
 name: soia-dev-review-panel
 description: 从多视角对代码 diff 或技能包进行对抗式复核，只读且不编辑、合并或发布。触发：「多角度审改动」「对抗式复核」「审技能包」
-version: 1.0.2
+version: 1.0.3
 created_at: 2026-07-21 19:04:05
-updated_at: 2026-07-27 10:47:17
+updated_at: 2026-08-05 13:30:00
 created_by: claude fable 5
-updated_by: gpt-5.6-sol
+updated_by: claude-opus-5
 dependencies:
   hard: [soia-dev-coding-protocol]
 ---

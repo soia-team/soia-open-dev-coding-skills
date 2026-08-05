@@ -1,9 +1,9 @@
 ---
 name: soia-dev-test-draft-doc
 description: 从需求、PRD 或变更说明生成测试计划、测试用例与验收对照；适用于测试设计、回归清单和质量评审。触发：「写测试用例」「出测试计划」「验收标准怎么定」
-version: 2.0.1
+version: 2.0.2
 created_at: 2026-07-23 00:03:56
-updated_at: 2026-08-05 10:30:00
+updated_at: 2026-08-05 13:30:00
 created_by: gpt-5.6-luna
 updated_by: claude-opus-5
 ---

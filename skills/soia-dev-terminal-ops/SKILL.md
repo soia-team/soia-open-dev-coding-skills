@@ -1,9 +1,9 @@
 ---
 name: soia-dev-terminal-ops
 description: 管理 POSIX/macOS/Linux 上的长任务、tmux 后台会话、日志抓取、停滞诊断与安全恢复；杀进程前用日志、CPU、网络多信号交叉判断，并走 TERM→复查→KILL 门。触发：「进程卡住了」「后台跑这个」「安全杀进程」
-version: 1.1.3
+version: 1.1.4
 created_at: 2026-07-07 14:44:10
-updated_at: 2026-08-05 10:30:00
+updated_at: 2026-08-05 13:30:00
 created_by: claude opus 4.6
 updated_by: claude-opus-5
 ---
